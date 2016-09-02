@@ -5,7 +5,7 @@
                 version='1.0'>
 
 <!-- ********************************************************************
-     $Id: lib.xsl,v 1.1.1.1 2004/05/03 18:38:16 rbraun Exp $
+     $Id: lib.xsl,v 1.2 2001/06/23 17:06:45 veillard Exp $
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.
@@ -19,7 +19,7 @@
 <doc:reference xmlns="">
 <referenceinfo>
 <releaseinfo role="meta">
-$Id: lib.xsl,v 1.1.1.1 2004/05/03 18:38:16 rbraun Exp $
+$Id: lib.xsl,v 1.2 2001/06/23 17:06:45 veillard Exp $
 </releaseinfo>
 <author><surname>Walsh</surname>
 <firstname>Norman</firstname></author>

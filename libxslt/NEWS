@@ -4,11 +4,62 @@
   Note that this is automatically generated from the news webpage at:
        http://xmlsoft.org/XSLT/news.html
 
+The change log at 
+ChangeLog.html
+ describes the recents commits
+to the CVS at 
+http://cvs.gnome.org/viewcvs/libxslt/
+ code base.Those are the public releases made:
+1.1.9: Aug 22 2004:
+   - build fixes: missing tests (William Brack), Python dependancies, Python
+    on 64bits boxes, --with-crypto flag (Rob Richards), 
+   - fixes: RVT key handling (William), Python binding (William and Sitsofe
+    Wheeler), key and XPath troubles (William), template priority on imports
+    (William), str:tokenize with empty strings (William), #default namespace
+    alias behaviour (William), doc ordering missing for main document
+    (William), 64bit bug (Andreas Schwab)
+   - improvements: EXSLT date:sum added (Joel Reed), hook for document
+    loading for David Hyatt, xsltproc --nodtdattr to avoid defaulting DTD
+    attributes, extend xsltproc --version with CVS stamp (William).
+   - Documentation: web page problem reported by Oliver Stoeneberg
 
-CVS only : check the Changelog at 
-http://cvs.gnome.org/lxr/source/libxslt/ChangeLog
- file
-for a really accurate description:
+
+1.1.8: July 5 2004:
+   - build fixes: Windows runtime options (Oliver Stoeneberg), Windows
+    binary package layout (Igor Zlatkovic), libgcrypt version test and link
+    (William)
+   - documentation: fix libxslt namespace name in doc (William)
+   - bug fixes: undefined namespace message (William Brack), search engine
+    (William), multiple namespace fixups (William), namespace fix for key
+    evaluation (William), Python memory debug bindings,
+   - improvements: crypto extensions for exslt (Joel Reed, William)
+
+
+1.1.7: May 17 2004:
+   - build fix: warning about localtime_r on Solaris
+   - bug fix: UTF8 string tokenize (William Brack), subtle memory
+    corruption, linefeed after comment at document level (William),
+    disable-output-escaping problem (William), pattern compilation in deep
+    imported stylesheets (William), namespace extension prefix bug,
+    libxslt.m4 bug (Edward Rudd), namespace lookup for attribute, namespaced
+    DOCTYPE name
+
+
+1.1.6: Apr 18 2004:
+   - 2 bug fixes about keys fixed one by Mark Vakoc
+
+
+1.1.5: Mar 23 2004:
+   - performance: use dictionnary lookup for variables
+   - remove use of _private from source documents
+   - cleanup of "make tests" output
+   - bugfixes: AVT in local variables, use localtime_r to avoid thread
+    troubles (William), dictionary handling bug (William), limited number of
+    stubstitutions in AVT (William), tokenize fix for UTF-8 (William),
+    superfluous namespace (William), xsltproc error code on
+    <xsl:message> halt, OpenVMS fix, dictionnary reference counting
+    change.
+
 
 1.1.4: Feb 23 2004:
    - bugfixes: attributes without doc (Mariano Suárez-Alvarez), problem with

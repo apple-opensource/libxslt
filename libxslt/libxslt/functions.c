@@ -348,7 +348,9 @@ xsltKeyFunction(xmlXPathParserContextPtr ctxt, int nargs){
     xmlChar *key = NULL, *value;
     const xmlChar *keyURI;
     xsltTransformContextPtr tctxt;
-
+    xsltDocumentPtr oldDocumentPtr;
+    xmlDocPtr oldXPathDocPtr;
+    
     if (nargs != 2) {
 	xsltTransformError(xsltXPathGetTransformContext(ctxt), NULL, NULL,
 		"key() : expects two arguments\n");
@@ -432,8 +434,37 @@ xsltKeyFunction(xmlXPathParserContextPtr ctxt, int nargs){
 	value = obj2->stringval;
 
 	tctxt = xsltXPathGetTransformContext(ctxt);
-
+	oldDocumentPtr = tctxt->document;
+	oldXPathDocPtr = tctxt->xpathCtxt->doc;
+	if ((ctxt->context->doc != NULL) &&
+		    (tctxt->document->doc != ctxt->context->doc)) {
+	    /*
+	     * The xpath context document needs to be changed.  If the
+	     * current context document is a node-set, we must use an
+	     * xsltDocument associated with the node-set, which may or
+	     * may not currently exist.
+	     */
+	    if (xmlStrEqual((const xmlChar *)ctxt->context->doc->name,
+	    		BAD_CAST " fake node libxslt")) {	/* node-set */
+		/*
+		 * Check whether we already have an xsltDocument set up
+		 */
+		if (ctxt->context->doc->_private == NULL)	/* nope */
+		    ctxt->context->doc->_private =
+		    	xsltNewDocument(tctxt, ctxt->context->doc);
+	        tctxt->document = ctxt->context->doc->_private;
+	    }
+	    else {
+	        tctxt->document = xsltFindDocument(tctxt, ctxt->context->doc);
+	        if (tctxt->document == NULL)
+	            tctxt->document = oldDocumentPtr;
+	        else
+	            tctxt->xpathCtxt->doc = ctxt->context->doc;
+	    }
+	}
 	nodelist = xsltGetKey(tctxt, key, keyURI, value);
+	tctxt->document = oldDocumentPtr;
+	tctxt->xpathCtxt->doc = oldXPathDocPtr;
 	valuePush(ctxt, xmlXPathWrapNodeSet(
 		        xmlXPathNodeSetMerge(NULL, nodelist)));
     }

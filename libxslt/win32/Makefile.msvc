@@ -51,7 +51,7 @@ CPPFLAGS = /nologo
 
 # The compiler and its options.
 CC = cl.exe
-CFLAGS = /nologo /D "WIN32" /D "_WINDOWS" /D "_MBCS" /W3 /MD /D "_REENTRANT"
+CFLAGS = /nologo /D "WIN32" /D "_WINDOWS" /D "_MBCS" /W3 $(CRUNTIME) /D "_REENTRANT"
 CFLAGS = $(CFLAGS) /I$(BASEDIR) /I$(XSLT_SRCDIR) /I$(INCPREFIX)
 
 # The linker and its options.
@@ -115,6 +115,7 @@ XSLT_OBJS_A = $(XSLT_INTDIR_A)\attributes.obj\
 
 # Libexslt object files.
 EXSLT_OBJS = $(EXSLT_INTDIR)\common.obj\
+	$(EXSLT_INTDIR)\crypto.obj\
 	$(EXSLT_INTDIR)\date.obj\
 	$(EXSLT_INTDIR)\exslt.obj\
 	$(EXSLT_INTDIR)\functions.obj\
@@ -126,6 +127,7 @@ EXSLT_OBJS = $(EXSLT_INTDIR)\common.obj\
 
 # Static libexslt object files.
 EXSLT_OBJS_A = $(EXSLT_INTDIR_A)\common.obj\
+	$(EXSLT_INTDIR_A)\crypto.obj\
 	$(EXSLT_INTDIR_A)\date.obj\
 	$(EXSLT_INTDIR_A)\exslt.obj\
 	$(EXSLT_INTDIR_A)\functions.obj\
@@ -181,12 +183,27 @@ install : all
 	copy $(BINDIR)\*.exe $(BINPREFIX)
 	-copy $(BINDIR)\*.pdb $(BINPREFIX)
 
+install-bindist : all
+	if not exist $(INCPREFIX)\$(XSLT_BASENAME) mkdir $(INCPREFIX)\$(XSLT_BASENAME)
+	if not exist $(INCPREFIX)\$(EXSLT_BASENAME) mkdir $(INCPREFIX)\$(EXSLT_BASENAME)
+	if not exist $(BINPREFIX) mkdir $(BINPREFIX)
+	if not exist $(LIBPREFIX) mkdir $(LIBPREFIX)
+	copy $(XSLT_SRCDIR)\*.h $(INCPREFIX)\$(XSLT_BASENAME)
+	copy $(EXSLT_SRCDIR)\*.h $(INCPREFIX)\$(EXSLT_BASENAME)
+	copy $(BINDIR)\$(XSLT_SO) $(SOPREFIX)
+	copy $(BINDIR)\$(XSLT_A) $(LIBPREFIX)
+	copy $(BINDIR)\$(XSLT_IMP) $(LIBPREFIX)
+	copy $(BINDIR)\$(EXSLT_SO) $(SOPREFIX)
+	copy $(BINDIR)\$(EXSLT_A) $(LIBPREFIX)
+	copy $(BINDIR)\$(EXSLT_IMP) $(LIBPREFIX)
+	copy $(BINDIR)\*.exe $(BINPREFIX)
+
 # This is a target for me, to make a binary distribution. Not for the public use,
 # keep your hands off :-)
 BDVERSION = $(LIBXSLT_MAJOR_VERSION).$(LIBXSLT_MINOR_VERSION).$(LIBXSLT_MICRO_VERSION)
 BDPREFIX = $(XSLT_BASENAME)-$(BDVERSION).win32
 bindist : all
-	$(MAKE) /nologo PREFIX=$(BDPREFIX) BINPREFIX=$(BDPREFIX)\util install
+	$(MAKE) /nologo PREFIX=$(BDPREFIX) SOPREFIX=$(BDPREFIX)\bin install-bindist
 	cscript //NoLogo configure.js genreadme $(XSLT_BASENAME) $(BDVERSION) $(BDPREFIX)\readme.txt
 
 # Makes the compiler output directory.

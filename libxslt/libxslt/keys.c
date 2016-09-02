@@ -558,8 +558,8 @@ xsltInitCtxtKey(xsltTransformContextPtr ctxt, xsltDocumentPtr doc,
     ctxt->xpathCtxt->node = (xmlNodePtr) doc->doc;
     ctxt->node = (xmlNodePtr) doc->doc;
     /* TODO : clarify the use of namespaces in keys evaluation */
-    ctxt->xpathCtxt->namespaces = NULL;
-    ctxt->xpathCtxt->nsNr = 0;
+    ctxt->xpathCtxt->namespaces = keyd->nsList;
+    ctxt->xpathCtxt->nsNr = keyd->nsNr;
     ctxt->inst = keyd->inst;
     res = xmlXPathCompiledEval(keyd->comp, ctxt->xpathCtxt);
     ctxt->xpathCtxt->contextSize = oldSize;
@@ -644,7 +644,30 @@ xsltInitCtxtKey(xsltTransformContextPtr ctxt, xsltDocumentPtr doc,
 		    } else {
 			xmlXPathNodeSetAdd(keylist, nodelist->nodeTab[i]);
 		    }
-		    nodelist->nodeTab[i]->_private = keyd;
+		    switch (nodelist->nodeTab[i]->type) {
+                        case XML_ELEMENT_NODE:
+                        case XML_TEXT_NODE:
+                        case XML_CDATA_SECTION_NODE:
+                        case XML_PI_NODE:
+                        case XML_COMMENT_NODE:
+			    nodelist->nodeTab[i]->psvi = keyd;
+			    break;
+                        case XML_ATTRIBUTE_NODE: {
+			    xmlAttrPtr attr = (xmlAttrPtr) 
+			                      nodelist->nodeTab[i];
+			    attr->psvi = keyd;
+			    break;
+			}
+                        case XML_DOCUMENT_NODE:
+                        case XML_HTML_DOCUMENT_NODE: {
+			    xmlDocPtr kdoc = (xmlDocPtr) 
+			                    nodelist->nodeTab[i];
+			    kdoc->psvi = keyd;
+			    break;
+			}
+			default:
+			    break;
+		    }
 		    xmlFree(str);
 		    str = list[index++];
 		}

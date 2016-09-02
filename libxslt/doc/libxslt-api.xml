@@ -14,13 +14,20 @@
      <summary>interface for the document handling</summary>
      <description>implements document loading and cache (multiple document() reference for the same resources must be equal. </description>
      <author>Daniel Veillard </author>
+     <exports symbol='XSLT_LOAD_START' type='enum'/>
+     <exports symbol='XSLT_LOAD_DOCUMENT' type='enum'/>
+     <exports symbol='XSLT_LOAD_STYLESHEET' type='enum'/>
+     <exports symbol='xsltLoadType' type='typedef'/>
+     <exports symbol='xsltDocDefaultLoader' type='variable'/>
      <exports symbol='xsltFreeDocuments' type='function'/>
      <exports symbol='xsltNewDocument' type='function'/>
      <exports symbol='xsltFreeStyleDocuments' type='function'/>
-     <exports symbol='xsltLoadDocument' type='function'/>
-     <exports symbol='xsltFindDocument' type='function'/>
      <exports symbol='xsltLoadStyleDocument' type='function'/>
+     <exports symbol='xsltFindDocument' type='function'/>
+     <exports symbol='xsltDocLoaderFunc' type='function'/>
+     <exports symbol='xsltLoadDocument' type='function'/>
      <exports symbol='xsltNewStyleDocument' type='function'/>
+     <exports symbol='xsltSetLoaderFunc' type='function'/>
     </file>
     <file name='extensions'>
      <summary>interface for the extension support</summary>
@@ -113,6 +120,7 @@
      <summary>interface for the key matching used in key() and template matches.</summary>
      <description>implementation of the key mechanims. </description>
      <author>Daniel Veillard </author>
+     <exports symbol='NODE_IS_KEYED' type='macro'/>
      <exports symbol='xsltInitCtxtKeys' type='function'/>
      <exports symbol='xsltFreeKeys' type='function'/>
      <exports symbol='xsltGetKey' type='function'/>
@@ -123,12 +131,14 @@
      <summary>interface for the XSLT namespace handling</summary>
      <description>set of function easing the processing and generation of namespace nodes in XSLT. </description>
      <author>Daniel Veillard </author>
+     <exports symbol='UNDEFINED_DEFAULT_NS' type='macro'/>
      <exports symbol='xsltFreeNamespaceAliasHashes' type='function'/>
      <exports symbol='xsltGetSpecialNamespace' type='function'/>
      <exports symbol='xsltCopyNamespaceList' type='function'/>
      <exports symbol='xsltCopyNamespace' type='function'/>
      <exports symbol='xsltNamespaceAlias' type='function'/>
      <exports symbol='xsltGetNamespace' type='function'/>
+     <exports symbol='xsltGetPlainNamespace' type='function'/>
     </file>
     <file name='numbersInternals'>
      <summary>Implementation of the XSLT number functions</summary>
@@ -434,11 +444,12 @@
      <exports symbol='xsltGenericDebugContext' type='variable'/>
      <exports symbol='xsltTimestamp' type='function'/>
      <exports symbol='xsltSaveResultToFile' type='function'/>
+     <exports symbol='xsltXPathCompile' type='function'/>
      <exports symbol='xsltSetTransformErrorFunc' type='function'/>
      <exports symbol='xsltSetGenericErrorFunc' type='function'/>
      <exports symbol='xsltSetDebuggerCallbacks' type='function'/>
-     <exports symbol='xsltCalibrateAdjust' type='function'/>
-     <exports symbol='xsltXPathCompile' type='function'/>
+     <exports symbol='xsltSaveResultTo' type='function'/>
+     <exports symbol='xsltTransformError' type='function'/>
      <exports symbol='xsltSetGenericDebugFunc' type='function'/>
      <exports symbol='xsltDebugSetDefaultTrace' type='function'/>
      <exports symbol='xsltDropCallCallback' type='function'/>
@@ -446,7 +457,7 @@
      <exports symbol='xsltComputeSortResult' type='function'/>
      <exports symbol='xsltSetSortFunc' type='function'/>
      <exports symbol='xsltDocumentSortFunction' type='function'/>
-     <exports symbol='xsltTransformError' type='function'/>
+     <exports symbol='xsltGetQNameURI2' type='function'/>
      <exports symbol='xslAddCall' type='function'/>
      <exports symbol='xsltGetDebuggerStatus' type='function'/>
      <exports symbol='xsltPrintErrorContext' type='function'/>
@@ -460,7 +471,7 @@
      <exports symbol='xsltGetQNameURI' type='function'/>
      <exports symbol='xsltAddCallCallback' type='function'/>
      <exports symbol='xsltSetDebuggerStatus' type='function'/>
-     <exports symbol='xsltSaveResultTo' type='function'/>
+     <exports symbol='xsltCalibrateAdjust' type='function'/>
      <exports symbol='xsltSaveProfiling' type='function'/>
      <exports symbol='xsltSaveResultToString' type='function'/>
      <exports symbol='xsltHandleDebuggerCallback' type='function'/>
@@ -492,6 +503,10 @@
       <info>Check that a node is a &apos;real&apos; one: document, element, text or attribute.</info>
     </macro>
     <macro name='LIBXSLT_PUBLIC' file='xsltexports'>
+    </macro>
+    <macro name='NODE_IS_KEYED' file='keys'>
+    </macro>
+    <macro name='UNDEFINED_DEFAULT_NS' file='namespaces'>
     </macro>
     <macro name='XSLTCALL' file='xsltexports'>
     </macro>
@@ -608,6 +623,9 @@
     <enum name='XSLT_FUNC_VARIABLE' file='xsltInternals' value='20' type='xsltStyleType'/>
     <enum name='XSLT_FUNC_WHEN' file='xsltInternals' value='21' type='xsltStyleType'/>
     <enum name='XSLT_FUNC_WITHPARAM' file='xsltInternals' value='18' type='xsltStyleType'/>
+    <enum name='XSLT_LOAD_DOCUMENT' file='documents' value='2' type='xsltLoadType' info=' loading document at transformation time'/>
+    <enum name='XSLT_LOAD_START' file='documents' value='0' type='xsltLoadType' info='loading for a top stylesheet'/>
+    <enum name='XSLT_LOAD_STYLESHEET' file='documents' value='1' type='xsltLoadType' info='loading for a stylesheet include/import'/>
     <enum name='XSLT_OUTPUT_HTML' file='xsltInternals' value='1' type='xsltOutputType'/>
     <enum name='XSLT_OUTPUT_TEXT' file='xsltInternals' value='2' type='xsltOutputType'/>
     <enum name='XSLT_OUTPUT_XML' file='xsltInternals' value='0' type='xsltOutputType'/>
@@ -685,6 +703,7 @@
       <field name='is_negative_pattern' type='char' info=' Flag for processing -ve prefix/suffix'/>
     </struct>
     <typedef name='xsltFormatNumberInfoPtr' file='numbersInternals' type='xsltFormatNumberInfo *'/>
+    <typedef name='xsltLoadType' file='documents' type='enum'/>
     <struct name='xsltNumberData' file='numbersInternals' type='struct _xsltNumberData'>
       <field name='level' type='const xmlChar *' info=''/>
       <field name='count' type='const xmlChar *' info=''/>
@@ -823,7 +842,9 @@ informations are stored'/>
 *'/>
       <field name='dict' type='xmlDictPtr' info='* precompiled attribute value templates.
 *'/>
-      <field name='attVTs' type='void *' info=''/>
+      <field name='attVTs' type='void *' info='* if namespace-alias has an alias for the default stylesheet prefix
+*'/>
+      <field name='defaultAlias' type='const xmlChar *' info=''/>
     </struct>
     <typedef name='xsltStylesheetPtr' file='xsltInternals' type='xsltStylesheet *'/>
     <struct name='xsltTemplate' file='xsltInternals' type='struct _xsltTemplate'>
@@ -906,6 +927,7 @@ informations are stored'/>
     <typedef name='xsltTransformContextPtr' file='xsltInternals' type='xsltTransformContext *'/>
     <typedef name='xsltTransformState' file='xsltInternals' type='enum'/>
     <variable name='xslDebugStatus' file='xsltutils' type='int'/>
+    <variable name='xsltDocDefaultLoader' file='documents' type='xsltDocLoaderFunc'/>
     <variable name='xsltEngineVersion' file='xslt' type='const char *'/>
     <variable name='xsltExtMarker' file='preproc' type='const xmlChar *'/>
     <variable name='xsltGenericDebug' file='xsltutils' type='xmlGenericErrorFunc'/>
@@ -1228,6 +1250,15 @@ informations are stored'/>
       <arg name='sorts' type='xmlNodePtr *' info='array of sort nodes'/>
       <arg name='nbsorts' type='int' info='the number of sorts in the array'/>
     </function>
+    <functype name='xsltDocLoaderFunc' file='documents'>
+      <info>An xsltDocLoaderFunc is a signature for a function which can be registered to load document not provided by the compilation or transformation API themselve, for example when an xsl:import, xsl:include is found at compilation time or when a document() call is made at runtime.</info>
+      <return type='xmlDocPtr' info='the pointer to the document (which will be modified and freed by the engine later), or NULL in case of error.'/>
+      <arg name='URI' type='const xmlChar *' info='the URI of the document to load'/>
+      <arg name='dict' type='xmlDictPtr' info='the dictionnary to use when parsing that document'/>
+      <arg name='options' type='int' info='parsing options, a set of xmlParserOption'/>
+      <arg name='ctxt' type='void *' info='the context, either a stylesheet or a transformation context'/>
+      <arg name='type' type='xsltLoadType' info='the xsltLoadType indicating the kind of loading required'/>
+    </functype>
     <function name='xsltDocumentComp' file='preproc'>
       <info>Pre process an XSLT-1.1 document element</info>
       <return type='xsltElemPreCompPtr' info='a precompiled data structure for the element'/>
@@ -1599,6 +1630,14 @@ informations are stored'/>
       <arg name='name' type='const xmlChar *' info='the attribute name'/>
       <arg name='nameSpace' type='const xmlChar *' info='the URI of the namespace'/>
     </function>
+    <function name='xsltGetPlainNamespace' file='namespaces'>
+      <info>Find the right namespace value for this prefix, if needed create and add a new namespace decalaration on the node Handle namespace aliases and make sure the prefix is not NULL, this is needed for attributes.</info>
+      <return type='xmlNsPtr' info='the namespace node to use or NULL'/>
+      <arg name='ctxt' type='xsltTransformContextPtr' info='a transformation context'/>
+      <arg name='cur' type='xmlNodePtr' info='the input node'/>
+      <arg name='ns' type='xmlNsPtr' info='the namespace'/>
+      <arg name='out' type='xmlNodePtr' info='the output node (or its parent)'/>
+    </function>
     <function name='xsltGetProfileInformation' file='xsltutils'>
       <info>This function should be called after the transformation completed to extract template processing profiling informations if availble. The informations are returned as an XML document tree like &lt;?xml version=&quot;1.0&quot;?&gt; &lt;profile&gt; &lt;template rank=&quot;1&quot; match=&quot;*&quot; name=&quot;&quot; mode=&quot;&quot; calls=&quot;6&quot; time=&quot;48&quot; average=&quot;8&quot;/&gt; &lt;template rank=&quot;2&quot; match=&quot;item2|item3&quot; name=&quot;&quot; mode=&quot;&quot; calls=&quot;10&quot; time=&quot;30&quot; average=&quot;3&quot;/&gt; &lt;template rank=&quot;3&quot; match=&quot;item1&quot; name=&quot;&quot; mode=&quot;&quot; calls=&quot;5&quot; time=&quot;17&quot; average=&quot;3&quot;/&gt; &lt;/profile&gt; The caller will need to free up the returned tree with xmlFreeDoc()</info>
       <return type='xmlDocPtr' info='the xmlDocPtr corresponding to the result or NULL if not available.'/>
@@ -1609,6 +1648,13 @@ informations are stored'/>
       <return type='const xmlChar *' info='the namespace URI if there is a prefix, or NULL if @name is not prefixed.'/>
       <arg name='node' type='xmlNodePtr' info='the node holding the QName'/>
       <arg name='name' type='xmlChar **' info='pointer to the initial QName value'/>
+    </function>
+    <function name='xsltGetQNameURI2' file='xsltutils'>
+      <info>This function is similar to xsltGetQNameURI, but is used when @name is a dictionary entry.</info>
+      <return type='const xmlChar *' info='the namespace URI if there is a prefix, or NULL if @name is not prefixed.'/>
+      <arg name='style' type='xsltStylesheetPtr' info='stylesheet pointer'/>
+      <arg name='node' type='xmlNodePtr' info='the node holding the QName'/>
+      <arg name='name' type='const xmlChar **' info='pointer to the initial QName value'/>
     </function>
     <function name='xsltGetSecurityPrefs' file='security'>
       <info>Lookup the security option to get the callback checking function</info>
@@ -1767,9 +1813,9 @@ informations are stored'/>
       <arg name='doc' type='xmlDocPtr' info='the input document'/>
     </function>
     <function name='xsltNextImport' file='imports'>
-      <info>Find the next stylesheet in import precedence.</info>
-      <return type='xsltStylesheetPtr' info='the next stylesheet or NULL if it was the last one'/>
-      <arg name='cur' type='xsltStylesheetPtr' info='the current XSLT stylesheet'/>
+      <info></info>
+      <return type='xsltStylesheetPtr' info=''/>
+      <arg name='cur' type='xsltStylesheetPtr' info=''/>
     </function>
     <function name='xsltNormalizeCompSteps' file='pattern'>
       <info>This is a hashtable scanner function to normalize the compiled steps of an imported stylesheet.</info>
@@ -2156,6 +2202,11 @@ informations are stored'/>
       <return type='void'/>
       <arg name='ctx' type='void *' info='the new error handling context'/>
       <arg name='handler' type='xmlGenericErrorFunc' info='the new handler function'/>
+    </function>
+    <function name='xsltSetLoaderFunc' file='documents'>
+      <info>Set the new function to load document, if NULL it resets it to the default function.</info>
+      <return type='void'/>
+      <arg name='f' type='xsltDocLoaderFunc' info='the new function to handle document loading.'/>
     </function>
     <function name='xsltSetSecurityPrefs' file='security'>
       <info>Update the security option to use the new callback checking function</info>

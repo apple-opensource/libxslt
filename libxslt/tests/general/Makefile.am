@@ -63,7 +63,7 @@ EXTRA_DIST = \
     bug-56.out bug-56.xsl \
     bug-57.out bug-57.xsl \
     bug-59.out bug-59.xsl \
-    bug-60.out bug-60.xsl \
+    bug-60.out bug-60.xsl bug-60.err \
     bug-61.out bug-61.xsl \
     bug-62-inc.out bug-62-inc.xsl \
     bug-62.out bug-62.xsl \
@@ -147,6 +147,19 @@ EXTRA_DIST = \
     bug-139.out bug-139.xsl \
     bug-140.out bug-140.xsl \
     bug-141.out bug-141.xsl \
+    bug-142.out bug-142.xsl \
+    bug-143.out bug-143.xsl \
+    bug-144.out bug-144.xsl \
+    bug-145.out bug-145.xsl bug-145.err \
+    bug-146.out bug-146.xsl \
+    bug-147.out bug-147.xsl \
+    bug-147-1.imp bug-147-2.imp bug-147-3.imp \
+    bug-147-4.imp bug-147-5.imp bug-147-6.imp \
+    bug-148.out bug-148.xsl \
+    bug-149.out bug-149.xsl \
+    bug-150.out bug-150.xsl \
+    bug-151.out bug-151.xsl \
+    bug-152.out bug-152.xsl \
     character.out character.xsl \
     character2.out character2.xsl \
     itemschoose.out itemschoose.xsl \
@@ -160,8 +173,9 @@ valgrind:
 	$(MAKE) CHECKER='valgrind -q' tests
 
 test tests: $(top_builddir)/xsltproc/xsltproc
+	@echo '## Running general tests'
 	@(echo > .memdump)
-	@(for i in $(srcdir)/../docs/*.xml ; do \
+	-@(for i in $(srcdir)/../docs/*.xml ; do \
 	  if [ -d $$i ] ; then continue ; fi ; \
 	  doc=`basename $$i .xml` ; \
 	  for j in $(srcdir)/$$doc*.xsl ; do \
@@ -169,11 +183,27 @@ test tests: $(top_builddir)/xsltproc/xsltproc
 	  if [ -d $$j ] ; then continue ; fi ; \
 	  name=`basename $$j .xsl`; \
 	  out=$(srcdir)/"$$name".out; \
-	  echo Running $$j on $$i ; \
-	  $(CHECKER) $(top_builddir)/xsltproc/xsltproc $$j $$i > result.$$name;\
-	  if [ ! -f $$out ] ; then cp result.$$name $$out ; \
-	  else diff $$out result.$$name; fi ; \
-	  grep "MORY ALLO" .memdump  | grep -v "MEMORY ALLOCATED : 0" || true;\
-	  rm -f result.$$name ; \
+	  err=$(srcdir)/"$$name".err; \
+	  log=`$(CHECKER) $(top_builddir)/xsltproc/xsltproc $$j $$i \
+	  	> result.$$name 2>err.$$name; \
+	  if [ ! -f $$out ] ; then \
+	  	cp result.$$name $$out ; \
+		if [ -s err.$$name ] ; then \
+			cp err.$$name $$err ; \
+		fi ; \
+	  else \
+	  	diff $$out result.$$name; \
+		if [ -s $$err ] ; then \
+	  		diff $$err err.$$name; \
+		else \
+			diff /dev/null err.$$name; \
+		fi ; \
+	  fi ; \
+	  grep "MORY ALLO" .memdump  | grep -v "MEMORY ALLOCATED : 0" || true`;\
+	  if [ -n "$$log" ] ; then \
+	  	echo $$name result ; \
+		echo $$log ; \
+	  fi ; \
+	  rm -f result.$$name err.$$name; \
 	  done ; done)
 

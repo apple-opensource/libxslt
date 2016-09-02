@@ -47,7 +47,7 @@
 /* #define WITH_XSLT_DEBUG_BLANKS */
 #endif
 
-const char *xsltEngineVersion = LIBXSLT_VERSION_STRING;
+const char *xsltEngineVersion = LIBXSLT_VERSION_STRING LIBXSLT_VERSION_EXTRA;
 const int xsltLibxsltVersion = LIBXSLT_VERSION;
 const int xsltLibxmlVersion = LIBXML_VERSION;
 
@@ -585,7 +585,7 @@ xsltGetInheritedNsList(xsltStylesheetPtr style,
                                                sizeof(xmlNsPtr));
                     if (ret == NULL) {
                         xmlGenericError(xmlGenericErrorContext,
-                                        "xmlGetNsList : out of memory!\n");
+                                        "xsltGetInheritedNsList : out of memory!\n");
                         return(0);
                     }
                     ret[nbns] = NULL;
@@ -604,7 +604,7 @@ xsltGetInheritedNsList(xsltStylesheetPtr style,
                                                       sizeof(xmlNsPtr));
                         if (ret == NULL) {
                             xmlGenericError(xmlGenericErrorContext,
-                                            "xmlGetNsList : realloc failed!\n");
+                                            "xsltGetInheritedNsList : realloc failed!\n");
                             return(0);
                         }
                     }
@@ -1222,8 +1222,9 @@ xsltPrecomputeStylesheet(xsltStylesheetPtr style, xmlNodePtr cur) {
 			moved = 0;
 			next = ns->next;
 			for (i = 0;i < style->exclPrefixNr;i++) {
-			    if (xmlStrEqual(ns->href,
-					    style->exclPrefixTab[i])) {
+			    if ((ns->prefix != NULL) && 
+			        (xmlStrEqual(ns->href,
+					     style->exclPrefixTab[i]))) {
 				/*
 				 * Move the namespace definition on the root
 				 * element to avoid duplicating it without
@@ -1495,6 +1496,11 @@ xsltParseTemplateContent(xsltStylesheetPtr style, xmlNodePtr templ) {
 	     * This is an element which will be output as part of the
 	     * template exectution, precompile AVT if found.
 	     */
+	    if ((cur->ns == NULL) && (style->defaultAlias != NULL) &&
+	    		(cur->type == XML_ELEMENT_NODE)) {
+		cur->ns = xmlSearchNsByHref(cur->doc, cur,
+			style->defaultAlias);
+	    }
 	    if (cur->properties != NULL) {
 	        xmlAttrPtr attr = cur->properties;
 
@@ -2126,7 +2132,8 @@ xsltParseStylesheetFile(const xmlChar* filename) {
 	}
     }
 
-    doc = xmlReadFile((const char *) filename, NULL, XSLT_PARSE_OPTIONS);
+    doc = xsltDocDefaultLoader(filename, NULL, XSLT_PARSE_OPTIONS,
+                               NULL, XSLT_LOAD_START);
     if (doc == NULL) {
 	xsltTransformError(NULL, NULL, NULL,
 		"xsltParseStylesheetFile : cannot parse %s\n", filename);

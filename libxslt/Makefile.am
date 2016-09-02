@@ -14,12 +14,13 @@ confexec_DATA = xsltConf.sh
 bin_SCRIPTS = xslt-config
 
 dist-hook: cleanup libxslt.spec
-	(cd $(srcdir) ; tar -cf - --exclude CVS win32 vms) | (cd $(distdir); tar xf -)
+	(cd $(srcdir) ; tar -cf - --exclude CVS win32 vms examples) | (cd $(distdir); tar xf -)
 
 EXTRA_DIST = xsltConf.sh.in xslt-config.in libxslt.spec libxslt.spec.in \
              FEATURES TODO Copyright libxslt.m4 \
 	     win32/libxslt/libxslt.def win32/libxslt/libxslt.dsw \
-	     win32/libxslt/libxslt_so.dsp win32/libxslt/xsltproc.dsp
+	     win32/libxslt/libxslt_so.dsp win32/libxslt/xsltproc.dsp \
+	     $(CVS_EXTRA_DIST)
 
 ## We create xsltConf.sh here and not from configure because we want
 ## to get the paths expanded correctly.  Macros like srcdir are given
@@ -42,8 +43,9 @@ check-local: tests
 dummy:
 
 tests: dummy
-	@(cd tests ; $(MAKE) tests)
-	@(if [ "@PYTHON_SUBDIR@" != "" ] ; then cd python ; $(MAKE) tests ; fi)
+	@echo '## Running the regression test suite'
+	@(cd tests ; $(MAKE) MAKEFLAGS+=--silent tests)
+	@(if [ "@PYTHON_SUBDIR@" != "" ] ; then cd python ; $(MAKE) MAKEFLAGS+=--silent tests ; fi)
 
 valgrind:
 	@echo '## Running the regression tests under Valgrind'

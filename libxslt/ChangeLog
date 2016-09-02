@@ -1,3 +1,473 @@
+Sun Aug 22 17:19:49 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* configure.in NEWS doc/*: preparing release of 1.1.9
+
+Sat Aug 21 22:08:14 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* transform.c: Further enhancement for keys on exslt:node-sets.
+	  Corrects a rather serious timing problem (bug 150741)
+	* tests/exslt/common/node-set.8.*: added regression test for this
+
+Fri Aug 20 18:53:50 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* Makefile.am configure.in: a bit of cleanup and a extra variable for
+	  CVS dist
+
+Fri Aug 20 11:30:19 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/imports.c: fix a 64bit bug reported by Andreas Schwab
+
+Wed Aug 18 14:27:18 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* configure.in libxslt/xsltconfig.h.in libxslt/xslt.c
+	  libxslt/xsltwin32config.* libexslt/exsltconfig.h.in
+	  libexslt/exslt.c: added some code to include the CVS
+	  ChangeLog version in the version strings available for
+	  printing (e.g. by xsltproc)
+
+Wed Aug 18 00:22:00 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* xsltproc/xsltproc.c: implemented --nodtdattr to avoid defaulting
+	  DTD attributes, RFE 150311 . Also cleanup the code from all
+	  libxml2 pre 2.6.0 specific code since we are using 
+	  LIBXML_REQUIRED_VERSION=2.6.8 in configure.in
+
+Tue Aug 17 01:01:22 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/documents.c libxslt/documents.h libxslt/imports.c
+	  libxslt/xslt.c libxslt/xsltutils.c: Implemented a hook to
+	  provide document loading as suggested by David Hyatt for
+	  Safari
+
+Mon Aug 16 12:53:55 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/transform.c: added a call to xmlXPathOrderDocElems
+	  in xmlNewTransformContext for the principal document (bug 133289)
+
+Sat Aug 14 21:49:48 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/namespaces.[ch], transform.c, xslt.c, xsltInternals.h:
+	  fixed handling of #default in namespace-alias for default
+	  namespace (bug 149659)
+	* tests/namespaces/tst7.* tst8.*: added regression tests for above
+
+Fri Aug  6 11:05:31 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libexslt/date.c: added date:sum routine supplied by Joel
+	  Reed
+
+Wed Aug  4 00:04:13 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* doc/downloads.html doc/xslt.html: fixed a couple of problems
+	  reported by Oliver Stoeneberg
+		
+Mon Aug  2 08:48:03 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/documents.c, libxslt/functions.c, libxslt/transform.c,
+	  libxslt/variables.c: added code to assure keys are generated
+	  when needed for node-sets (bug 148773)
+	* tests/exslt/common/node-set.7.* - added test case for above.
+
+Mon Jul 26 17:03:22 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libexslt/strings.c: fixed str:tokenize for case when 2nd
+	  argument is an empty string (should produce a token for
+	  each char in the string).  Reported on the mailing list by
+	  Peter Pawlowski.
+
+Fri Jul 23 21:55:14 PDT 2004 William Brack <wbrack@mmm.com.hk>
+	* libxslt/imports.c: further enhancement for template priorities
+	  on imported stylesheets (better fix for bug 141279, fixes
+	  bug 148246).
+
+Fri Jul 16 12:14:57 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* configure.in libexslt/crypto.c libexslt/exslt.[ch] 
+	  libexslt/exsltconfig.h.in win32/configure.js: apply patch from
+	  Rob Richards to add a normal --with-crypto configure option.
+
+Tue Jul 13 22:57:43 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/functions.c: added some logic to xsltKeyFunction
+	  to set the transform context doc ptr when the xpath context
+	  doc is different (bug 147445)
+	* tests/exslt/common/Makefile.am, tests/exslt/common/node-set.5*
+	  and tests/exslt/common/node-set.6*: added regression tests
+	  for bug 145547 (UNION and FILTER for RVT's)
+
+Mon Jul 12 08:28:07 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* python/libxslt-python-api.xml: fixed type for doctypeSystem
+	  and doctypePublic (problem reported on the list by Sitsofe
+	  Wheeler)
+	* doc/libxslt-api.xml: updated database.
+
+Sun Jul 11 22:46:31 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* transform.c: small change to key handling for RVT, needed
+	  because of enhancement to libxml2 xpath.
+
+Fri Jul  9 02:51:38 PDT 2004 Daniel Veillard <daniel@veillard.com>
+
+	* python/libxsl.py: fixes Python on 64bits box problem.
+
+Tue Jul  6 18:43:37 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt.spec.in: better python dependancy Red hat bug #126364
+	  by Robert Scheck
+
+Tue Jul  6 21:35:44 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* tests/namespaces/Makefile.am: added extra2.err, tst5.xml,
+	  tst5.xsl and tst.out to EXTRA_DIST
+
+Mon Jul  5 21:48:13 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* configure.in doc/*: releasing 1.1.8
+
+Sun Jul  4 24:18:12 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* xsltproc/Makefile.am: changed the sequence of LD_ADDS and
+	  LIBGCRYPT_LIBS on xsltproc_LDADD.  Previously this was
+	  causing the wrong libs to be linked when using the configure
+	  option --with-libxml-libs-prefix, or --with-libxml-src (nasty)
+
+Sun Jul  4 21:42:48 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libexslt/Makefile.am: implemented change from Joel Reed for
+	  automake-1.4 compatibility.
+	* libexslt/crypto.c: reformatted source to remove an overly
+	  generous supply of tabs.  Added a #include for sys/select to
+	  fix a compilation error caused by the gcrypt include file's
+	  usage of 'fd_set'.  Made some minor changes to fix
+	  some warning messages (no change to the logic).
+	* configure.in, config.h.in: added test for presence of
+	  sys/select.h.
+	  Added test for libgcrypt version > 1.1.41 (bug 145245)
+	  
+Sat Jul  3 17:52:27 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* doc/xslt.html, doc/extensions.html: corrected the URI for libxslt
+	  namespace, also a small enhancement of the surrounding text on
+	  extension functions. (bug 145250)
+	  
+Fri Jul  2 15:51:49 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* configure.in: convenience change
+	* python/libxsl.py python/libxslt-python-api.xml python/libxslt.c:
+	  try to avoid calling libxml2 cleanup function directly but go
+	  though the python wrapper of libxml2 for memory debug accounting.
+
+Fri Jul  2 16:24:12 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/keys.c: added namespace setup before calling XPath
+	  to evaluate key (Bug 143520)
+
+Thu Jul  1 10:07:55 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/transform.c: added coding to xsltCopyTree to copy
+	  namespaces (bug 139578).
+	* tests/general/bug-128.out: changed to reflect above fix
+	* libxslt/xslt.c: minor change to an error message
+
+Wed Jun 30 18:41:20 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* win32/Makefile.msvc win32/Makefile.mingw libexslt/Makefile.am
+	  libexslt/exslt.c libexslt/exslt.h config.h.in configure.in
+	  libexslt/crypto.c: applied patch from Joel Reed to get EXSLT
+	  crypto extensions based on libgcrypt if found at configure time.
+	* tests/namespaces/Makefile.am: fixed a small breakage
+
+Wed Jun 30 12:28:34 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/namespaces: some enhancement for fixing bug 142768
+	* tests/namespaces/Makefile.am, tests/namespaces/tst6*:
+	  added regression test for this bug
+
+Tue Jun 29 09:23:03 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* Makefile.am examples/xsltICUSort.c: seems I never commited to CVS
+	  the example from Richard Jinks
+
+Wed Jun  9 16:33:56 CEST 2004 Igor Zlatkovic <igor@zlatkovic.com>
+
+	* win32/configure.js win32/Makefile.* minor changes for the new
+	  layout of the Windows binary package
+
+Wed May 26 10:51:22 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* doc/search.php.inc, doc/search/php: enhanced to remove
+	  forcing module names to lower case, and to fix problem
+	  with links between pages in libxml2 directory.
+
+Mon May 24 12:46:10 HKT 2004 Igor Zlatkovic <igor@zlatkovic.com>
+
+	* win32/makefile.msvc, win32/configure.js: included the cruntime 
+	  option, contributed by Oliver Stoeneberg
+
+Mon May 24 08:37:22 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/xsltutils.c: fixed bug in error message printing
+	  for undefined namespace (bug 143004)
+
+Mon May 17 23:08:42 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* NEWS doc/*: updated for 1.1.7
+
+Mon May 17 06:14:09 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* configure.in: release of libxslt-1.1.7
+
+Sun May 16 23:08:05 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* tests/general/bug-151*, tests/docs/bug-151.xml,
+	  tests/general/Makefile.am, tests/docs/Makefile.am: added
+	  regression test for old bug #127877
+
+Sun May 16 20:48:35 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/transform.c: fixing bug #135542 about the DOCTYPE name
+	  being generated when the root element is namespaced 
+	* tests/general/bug-151*, tests/docs/bug-151.xml,
+	  tests/general/Makefile.am, tests/docs/Makefile.am: added
+	  regression test for bug #135542
+
+Sun May 16 19:39:44 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/namespaces.c libxslt/namespaces.h libxslt/templates.c
+	  libxslt/transform.c: fixing bug #134500 on namespace lookup for
+	  attribute which sometimes lead to default namespace
+	* tests/general/bug-150*, tests/docs/bug-150.xml,
+	  tests/general/Makefile.am, tests/docs/Makefile.am: added
+	  regression test for bug #134500
+
+Sun May 16 18:09:36 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libexslt/date.h: fixing a small portability problem on Solaris
+	  for the declaration of localtime_r bug #140468
+
+Sun May 16 16:36:38 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt.m4: applied patch from Edward Rudd to fix the problems
+	  raised in bug #142429
+	  
+Sun May 16 11:01:52 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/xslt.c: fixed a weird namespace bug #141532
+	* tests/docs/Makefile.am tests/docs/bug-14[89].xml
+	  tests/general/Makefile.am tests/docs/bug-14[89]*: added tests
+	  to the regression for bug #141532
+
+Sun May  2 23:47:43 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/imports.c: added comments and function header,
+	  improved logic of routine just added.
+	* tests/general/bug-147*, tests/docs/bug-147.xml,
+	  tests/general/Makefile.am, tests/docs/Makefile.am: added
+	  regression test for bug 141279
+
+Sun May  2 12:47:32 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/imports.c: enhanced normalization of comp steps
+	  when an imported stylesheet has it's own imports
+	  (bug 141279)
+
+Sat May  1 10:35:03 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/transform.c: added code to recognize
+	  disable-output-escaping on certain text nodes (bug 140755)
+	* tests/general/bug-100.out: regenerated to account for change
+	  from next ChangeLog entry (bug 140558)
+
+Wed Apr 28 18:17:24 PDT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/xsltutils.c: suppressed any automatic linefeed after
+	  a comment following the document root element (bug 140558)
+
+Thu Apr 22 08:38:35 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/transform.c: fix a problem where we updated an
+	  ELEMENT node psvi field as if it was a DOCUMENT one, leading
+	  to a subtle crash later, valgrind rules.
+
+The Apr 20 00:22:37 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libexslt/strings.c: fixed bug in UTF8 string tokenize
+	  kindly reported by Vasily Tchekalkin
+
+Mon Apr 19 00:39:18 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* configure.in doc/*: preparing release 1.1.6
+	* libxslt.spec.in: keep the ChangeLog compressed 
+
+Mon Apr  5 15:23:53 CEST 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/keys.c: fixed a stupid cut'npaste bug #139132
+	* tests/docs/Makefile.am tests/docs/bug-146.xml
+	  tests/general/Makefile.am tests/docs/bug-146*: added test
+	  to the regression for bug #139132
+
+2004-04-02 10:17:23 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/keys.c: applied patch from Mark Vakoc to fix problem
+	  with key matching attribute node.
+
+2004-04-01  Johan Dahlin  <johan@gnome.org>
+
+	* python/.cvsignore: Add generated files, to make cvs silent.
+
+	* .cvsignore: Add missing libexslt.pc and stamp-h1
+
+Tue Mar 23 13:13:56 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* configure.in: prepare release of 1.1.5, made a hard dependancy
+	  to libxml2 2.6.8 due to the dictionnary reference counting change
+	* doc/*: updated and rebuilt the doc.
+	* tests/namespaces/Makefile.am: fixed a build problem (tst5 ?)
+
+Mon Mar 22 20:25:41 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/xsltconfig.h.in: small fix for OpenVMS
+	* libxslt/documents.c: fixed a leak associated to the change
+	  in reference counting when running the XML parser and using
+	  the document() function.
+
+Wed Mar 17 18:49:55 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* xsltproc/xsltproc.c: added check for state XSLT_STATE_STOPPED
+	  when output file is used (bug 137341)
+	  
+Tue Mar 16 08:55:18 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/xsltutils.c: corrected my error from bug 135938
+	  pointed out on the mailing list by Mark Vakoc.
+	* libxslt/transform.c: enhanced the error message for
+	  call-template when namespace is present.
+	* tests/general/bug-145.err: regenerated for new message
+
+Fri Mar 12 13:07:03 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/namespaces.c: added additional check to prevent
+	  superfluous namespace href's being generated on elements
+	  (bug 136914)
+	* tests/namespaces/Makefile.am, tests/namespaces/tst5.x[ms]l:
+	  added new test for bug 136914
+	* tests/namespaces, tests/extensions/ tests/reports: fixed
+	  error in "enhanced" Makefile.am, removed superfluous .err files
+	  from cvs
+
+Wed Mar 10 19:27:39 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* doc/search.php.incl: minor addition for later version of php
+	  requiring $HTTP_GET_VARS.
+	  doc/*: rebuilt the docs
+
+Wed Mar 10 17:14:13 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libexslt/strings.c: modified the 'tokenize' routine to work with
+	  UTF8 chars in both string and tokens (Bug 136183)
+
+Tue Mar  9 23:44:31 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/attrvt.c: added coding to allow growing the
+	  AVT structure when a large number of segments are present
+	  (bug 136624)
+	* libxslt/keys.c: fixed a compilation warning (no logic change)
+
+Sat Mar  6 23:42:47 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* tests/docbook/Makefile.am: small fix to typo
+
+Sat Mar  6 23:05:11 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* Makefile.am, tests/Makefile.am, tests/REC/Makefile.am,
+	  tests/REC1/Makefile.am, tests/REC2/Makefile.am,
+	  tests/XSLTMark/Makefile.am, tests/docbook/Makefile.am,
+	  tests/exslt/common/Makefile.am, tests/exslt/date/Makefile.am,
+	  tests/exslt/functions/Makefile.am, tests/exslt/math/Makefile.am,
+	  tests/exslt/sets/Makefile.am, tests/exslt/strings/Makefile.am,
+	  tests/extensions/Makefile.am, tests/general/Makefile.am,
+	  tests/keys/Makefile.am, tests/multiple/Makefile.am,
+	  tests/namespaces/Makefile.am, tests/numbers/Makefile.am,
+	  tests/reports/Makefile.am, test/xmlspec/Makefile.am,
+	  tests/general/bug-60.err, tests/docbook/result/html/gdp-handbook.err,
+	  tests/REC/test-2.5-1.err:
+	  Major enhancement to "make tests". All but Python tests
+	  cleaned up to produce minimum summary output if no problems.
+	* tests/general/bug-145.xsl, tests/general/bug-145.err,
+	  tests/docs/Makefile.am, tests/docs/bug-145.xml:
+	  Added test case for bugzilla bug 135938
+	  
+Thu Mar  4 23:02:18 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* libxslt/xsltutils.h, libxslt/xsltutils.c, libxslt/preproc.c:
+	  fixed problem with dictionary handling (bug 135938).
+	* doc/EXSLT/*: fixed a few more "href_base" files.
+
+Wed Mar  3 21:33:33 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* doc/*, doc/html/*, doc/EXSLT/*: rebuilt the docs to fix
+	  the "href_base" problem.
+
+Fri Feb 27 01:04:47 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* configure.in, config.h.in: added test for localtime_r
+	* libexslt/date.c: added usage of localtime_r if present on
+	  system (bug 129983, suggested by Vasily Tchekalkin)
+
+Thu Feb 26 16:59:45 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/keys.c libxslt/pattern.c: removed the last use
+	  of _private that time in the input document, use the psvi
+	  field again, this may be interesting if XSLT2 support gets
+	  in but since this is very unlikely ...
+
+Thu Feb 26 16:04:28 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/transform.c libxslt/variables.c: use the psvi field
+	  of teh document used for RVT instead of _private. 
+
+Thu Feb 26 15:17:52 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/attrvt.c libxslt/templates.c: use the psvi field of
+	  the attribute instead of the _private one to compile AVT infos
+
+Thu Feb 26 14:53:16 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* tests/docs/Makefile.am tests/docs/bug-144.xml
+	  tests/general/Makefile.am tests/docs/bug-144*: added test
+	  similar to 143 but checking for AVT in local variables.
+	
+Thu Feb 26 13:16:33 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/attrvt.c libxslt/variables.c: fixed a regression for
+	  AVT found in global variable content.
+	* tests/docs/Makefile.am tests/docs/bug-143.xml
+	  tests/general/Makefile.am tests/docs/bug-143*: added test
+	  to the regression suite.
+
+Wed Feb 25 16:35:01 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/attributes.c libxslt/keys.h libxslt/preproc.c 
+	  libxslt/transform.c libxslt/variables.c libxslt/xsltutils.c:
+	  First step toward _private cleanup: use the psvi field to store
+	  the precompilation informations in the stylesheet nodes.
+
+Wed Feb 25 14:24:34 CET 2004 Daniel Veillard <daniel@veillard.com>
+
+	* libxslt/variables.c: trying to use the fact that names comes
+	  from a dictionnary when looking up for variables.
+	* tests/documents/Makefile.am: try to fix an error reported on
+	  the list.
+
+Wed Feb 25 17:02:22 HKT 2004 William Brack <wbrack@mmm.com.hk>
+
+	* tests/general/Makefile.am, tests/general/bug-142.xsl,
+	  tests/general/bug-142.out, tests/docs/Makefile.am,
+	  tests/general/bug-142.xml: added test for language
+	  attribute which previously triggered a memory leak
+	  (from list report by Mike Hommey)
+
 Mon Feb 23 18:01:44 CET 2004 Daniel Veillard <daniel@veillard.com>
 
 	* NEWS configure.in doc/*: preparing release 1.1.4, updated and

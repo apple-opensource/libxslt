@@ -33,6 +33,9 @@ else:
 	     pass
 #            print "libxslt could not guess RTLD_GLOBAL and RTLD_NOW " + \
 #                  "on this platform: %s" % (osname)
+    except:
+	 RTLD_GLOBAL = -1
+	 RTLD_NOW = -1
 
     if RTLD_GLOBAL != -1 and RTLD_NOW != -1:
         try:
@@ -83,6 +86,11 @@ class extensionModule:
     def ctxtShutdown(self, ctxt, URI, data):
         """Callback function when a transformation using it finishes"""
 	pass
+
+def cleanup():
+    """Cleanup all libxslt and libxml2 memory allocated"""
+    libxsltmod.xsltPythonCleanup()
+    libxml2.cleanupParser()
 
 #
 # Everything below this point is automatically generated

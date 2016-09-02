@@ -29,6 +29,7 @@
 #include "transform.h"
 #include "imports.h"
 #include "preproc.h"
+#include "keys.h"
 
 #ifdef WITH_XSLT_DEBUG
 #define WITH_XSLT_DEBUG_VARIABLE
@@ -128,12 +129,20 @@ xsltFreeRVTs(xsltTransformContextPtr ctxt)
     cur = ctxt->tmpRVT;
     while (cur != NULL) {
         next = (xmlDocPtr) cur->next;
+	if (cur->_private != NULL) {
+	    xsltFreeDocumentKeys(cur->_private);
+	    xmlFree(cur->_private);
+	}
 	xmlFreeDoc(cur);
 	cur = next;
     }
     cur = ctxt->persistRVT;
     while (cur != NULL) {
         next = (xmlDocPtr) cur->next;
+	if (cur->_private != NULL) {
+	    xsltFreeDocumentKeys(cur->_private);
+	    xmlFree(cur->_private);
+	}
 	xmlFreeDoc(cur);
 	cur = next;
     }
@@ -244,7 +253,6 @@ xsltFreeStackElemList(xsltStackElemPtr elem) {
 static xsltStackElemPtr
 xsltStackLookup(xsltTransformContextPtr ctxt, const xmlChar *name,
 	        const xmlChar *nameURI) {
-    xsltStackElemPtr ret = NULL;
     int i;
     xsltStackElemPtr cur;
 
@@ -254,6 +262,58 @@ xsltStackLookup(xsltTransformContextPtr ctxt, const xmlChar *name,
     /*
      * Do the lookup from the top of the stack, but
      * don't use params being computed in a call-param
+     * First lookup expects the variable name and URI to
+     * come from the disctionnary and hence get equality
+     */
+    for (i = ctxt->varsNr; i > ctxt->varsBase; i--) {
+	cur = ctxt->varsTab[i-1];
+	while (cur != NULL) {
+	    if (cur->name == name) {
+		if (nameURI == NULL) {
+		    if (cur->nameURI == NULL) {
+			return(cur);
+		    }
+		} else {
+		    if ((cur->nameURI != NULL) &&
+			(cur->nameURI == nameURI)) {
+			return(cur);
+		    }
+		}
+
+	    }
+	    cur = cur->next;
+	}
+    }
+
+#if 0
+    if ((xmlDictOwns(ctxt->dict, name) <= 0) ||
+        ((nameURI != NULL) && (xmlDictOwns(ctxt->dict, nameURI) <= 0))) {
+	/*
+	 * Redo the lookup with string compares
+	 */
+	for (i = ctxt->varsNr; i > ctxt->varsBase; i--) {
+	    cur = ctxt->varsTab[i-1];
+	    while (cur != NULL) {
+		if (xmlStrEqual(cur->name, name)) {
+		    if (nameURI == NULL) {
+			if (cur->nameURI == NULL) {
+			    return(cur);
+			}
+		    } else {
+			if ((cur->nameURI != NULL) &&
+			    (xmlStrEqual(cur->nameURI, nameURI))) {
+			    return(cur);
+			}
+		    }
+
+		}
+		cur = cur->next;
+	    }
+	}
+    }
+#else
+    /*
+     * Redo the lookup with string compares
      */
     for (i = ctxt->varsNr; i > ctxt->varsBase; i--) {
 	cur = ctxt->varsTab[i-1];
@@ -274,7 +334,8 @@ xsltStackLookup(xsltTransformContextPtr ctxt, const xmlChar *name,
 	    cur = cur->next;
 	}
     }
-    return(ret);
+#endif
+    return(NULL);
 }
 
 /**
@@ -598,7 +659,7 @@ xsltEvalGlobalVariable(xsltStackElemPtr elem, xsltTransformContextPtr ctxt) {
 	    /*
 	     * Save a pointer to the global variable for later cleanup
 	     */
-	    container->_private = elem;
+	    container->psvi = elem;
 	    oldoutput = ctxt->output;
 	    ctxt->output = container;
 	    oldInsert = ctxt->insert;
@@ -1290,7 +1351,7 @@ xsltParseStylesheetCallerParam(xsltTransformContextPtr ctxt, xmlNodePtr cur) {
 
     if ((cur == NULL) || (ctxt == NULL))
 	return(NULL);
-    comp = (xsltStylePreCompPtr) cur->_private;
+    comp = (xsltStylePreCompPtr) cur->psvi;
     if (comp == NULL) {
 	xsltTransformError(ctxt, NULL, cur,
 	    "xsl:param : compilation error\n");
@@ -1340,7 +1401,7 @@ xsltParseGlobalVariable(xsltStylesheetPtr style, xmlNodePtr cur) {
 	return;
 
     xsltStylePreCompute(style, cur);
-    comp = (xsltStylePreCompPtr) cur->_private;
+    comp = (xsltStylePreCompPtr) cur->psvi;
     if (comp == NULL) {
 	xsltTransformError(NULL, style, cur,
 	     "xsl:variable : compilation failed\n");
@@ -1353,6 +1414,9 @@ xsltParseGlobalVariable(xsltStylesheetPtr style, xmlNodePtr cur) {
 	return;
     }
 
+    if (cur->children != NULL) {
+        xsltParseTemplateContent(style, cur);
+    }
 #ifdef WITH_XSLT_DEBUG_VARIABLE
     xsltGenericDebug(xsltGenericDebugContext,
 	"Registering global variable %s\n", comp->name);
@@ -1379,7 +1443,7 @@ xsltParseGlobalParam(xsltStylesheetPtr style, xmlNodePtr cur) {
 	return;
 
     xsltStylePreCompute(style, cur);
-    comp = (xsltStylePreCompPtr) cur->_private;
+    comp = (xsltStylePreCompPtr) cur->psvi;
     if (comp == NULL) {
 	xsltTransformError(NULL, style, cur,
 	     "xsl:param : compilation failed\n");
@@ -1390,6 +1454,10 @@ xsltParseGlobalParam(xsltStylesheetPtr style, xmlNodePtr cur) {
 	xsltTransformError(NULL, style, cur,
 	    "xsl:param : missing name attribute\n");
 	return;
+    }
+
+    if (cur->children != NULL) {
+        xsltParseTemplateContent(style, cur);
     }
 
 #ifdef WITH_XSLT_DEBUG_VARIABLE
@@ -1417,7 +1485,7 @@ xsltParseStylesheetVariable(xsltTransformContextPtr ctxt, xmlNodePtr cur) {
     if ((cur == NULL) || (ctxt == NULL))
 	return;
 
-    comp = (xsltStylePreCompPtr) cur->_private;
+    comp = (xsltStylePreCompPtr) cur->psvi;
     if (comp == NULL) {
 	xsltTransformError(ctxt, NULL, cur,
 	     "xsl:variable : compilation failed\n");
@@ -1454,7 +1522,7 @@ xsltParseStylesheetParam(xsltTransformContextPtr ctxt, xmlNodePtr cur) {
     if ((cur == NULL) || (ctxt == NULL))
 	return;
 
-    comp = (xsltStylePreCompPtr) cur->_private;
+    comp = (xsltStylePreCompPtr) cur->psvi;
     if (comp == NULL) {
 	xsltTransformError(ctxt, NULL, cur,
 	     "xsl:param : compilation failed\n");

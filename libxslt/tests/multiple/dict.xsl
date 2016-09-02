@@ -14,7 +14,7 @@
       *
       * Liam Quin, 2001
       *
-      * $Id: dict.xsl,v 1.1.1.1 2004/05/03 18:38:17 rbraun Exp $
+      * $Id: dict.xsl,v 1.2 2003/01/09 13:30:35 veillard Exp $
       *
       *-->
 

@@ -92,8 +92,7 @@ xsltGetCNsProp(xsltStylesheetPtr style, xmlNodePtr node,
 
     prop = node->properties;
     if (nameSpace == NULL) {
-        tmp = xmlGetProp(node, name);
-	goto found;
+        return xmlGetProp(node, name);
     }
     while (prop != NULL) {
 	/*
@@ -108,11 +107,17 @@ xsltGetCNsProp(xsltStylesheetPtr style, xmlNodePtr node,
 	      (xmlStrEqual(prop->ns->href, nameSpace))))) {
 
 	    tmp = xmlNodeListGetString(node->doc, prop->children, 1);
-	    goto found;
+	    if (tmp == NULL)
+	        ret = xmlDictLookup(style->dict, BAD_CAST "", 0);
+	    else {
+	        ret = xmlDictLookup(style->dict, tmp, -1);
+		xmlFree(tmp);
+	    }
+	    return ret;
         }
 	prop = prop->next;
     }
-
+    tmp = NULL;
     /*
      * Check if there is a default declaration in the internal
      * or external subsets
@@ -138,14 +143,6 @@ xsltGetCNsProp(xsltStylesheetPtr style, xmlNodePtr node,
 	}
     }
     return(NULL);
-found:
-    if (tmp == NULL)
-        ret = xmlDictLookup(style->dict, BAD_CAST "", 0);
-    else {
-	ret = xmlDictLookup(style->dict, tmp, -1);
-	xmlFree(tmp);
-    }
-    return(ret);
 }
 /**
  * xsltGetNsProp:
@@ -690,7 +687,7 @@ xsltGetQNameURI(xmlNodePtr node, xmlChar ** name)
     if (ns == NULL) {
 	xsltGenericError(xsltGenericErrorContext,
 		"%s:%s : no namespace bound to prefix %s\n",
-		         qname, &qname[len + 1]);
+		         qname, &qname[len + 1], qname);
 	*name = NULL;
 	xmlFree(qname);
 	return(NULL);
@@ -700,6 +697,74 @@ xsltGetQNameURI(xmlNodePtr node, xmlChar ** name)
     return(ns->href);
 }
 
+/**
+ * xsltGetQNameURI2:
+ * @style:  stylesheet pointer
+ * @node:   the node holding the QName
+ * @name:   pointer to the initial QName value
+ *
+ * This function is similar to xsltGetQNameURI, but is used when
+ * @name is a dictionary entry.
+ *
+ * Returns the namespace URI if there is a prefix, or NULL if @name is
+ * not prefixed.
+ */
+const xmlChar *
+xsltGetQNameURI2(xsltStylesheetPtr style, xmlNodePtr node,
+		 const xmlChar **name) {
+    int len = 0;
+    xmlChar *qname;
+    xmlNsPtr ns;
+
+    if (name == NULL)
+        return(NULL);
+    qname = (xmlChar *)*name;
+    if ((qname == NULL) || (*qname == 0))
+        return(NULL);
+    if (node == NULL) {
+        xsltGenericError(xsltGenericErrorContext,
+                         "QName: no element for namespace lookup %s\n",
+                          qname);
+	*name = NULL;
+	return(NULL);
+    }
+
+    /*
+     * we are not trying to validate but just to cut, and yes it will
+     * work even if this is a set of UTF-8 encoded chars
+     */
+    while ((qname[len] != 0) && (qname[len] != ':'))
+        len++;
+
+    if (qname[len] == 0)
+        return(NULL);
+
+    /*
+     * handle xml: separately, this one is magical
+     */
+    if ((qname[0] == 'x') && (qname[1] == 'm') &&
+        (qname[2] == 'l') && (qname[3] == ':')) {
+        if (qname[4] == 0)
+            return(NULL);
+        *name = xmlDictLookup(style->dict, &qname[4], -1);
+        return(XML_XML_NAMESPACE);
+    }
+
+    qname = xmlStrndup(*name, len);
+    ns = xmlSearchNs(node->doc, node, qname);
+    if (ns == NULL) {
+        xsltGenericError(xsltGenericErrorContext,
+                "%s : no namespace bound to prefix %s\n",
+		*name, qname);
+        *name = NULL;
+        xmlFree(qname);
+        return(NULL);
+    }
+    *name = xmlDictLookup(style->dict, (*name)+len+1, -1);
+    xmlFree(qname);
+    return(ns->href);
+}
+										      
 /************************************************************************
  * 									*
  * 				Sorting					*
@@ -760,7 +825,7 @@ xsltComputeSortResult(xsltTransformContextPtr ctxt, xmlNodePtr sort) {
     int oldNsNr;
     xmlNsPtr *oldNamespaces;
 
-    comp = sort->_private;
+    comp = sort->psvi;
     if (comp == NULL) {
 	xsltGenericError(xsltGenericErrorContext,
 	     "xsl:sort : compilation failed\n");
@@ -874,7 +939,7 @@ xsltDefaultSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts,
 	return;
     if (sorts[0] == NULL)
 	return;
-    comp = sorts[0]->_private;
+    comp = sorts[0]->psvi;
     if (comp == NULL)
 	return;
 
@@ -883,7 +948,7 @@ xsltDefaultSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts,
 	return; /* nothing to do */
 
     for (j = 0; j < nbsorts; j++) {
-	comp = sorts[j]->_private;
+	comp = sorts[j]->psvi;
 	tempstype[j] = 0;
 	if ((comp->stype == NULL) && (comp->has_stype != 0)) {
 	    comp->stype =
@@ -934,7 +999,7 @@ xsltDefaultSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts,
 
     results = resultsTab[0];
 
-    comp = sorts[0]->_private;
+    comp = sorts[0]->psvi;
     descending = comp->descending;
     number = comp->number;
     if (results == NULL)
@@ -983,7 +1048,7 @@ xsltDefaultSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts,
 		    while (depth < nbsorts) {
 			if (sorts[depth] == NULL)
 			    break;
-			comp = sorts[depth]->_private;
+			comp = sorts[depth]->psvi;
 			if (comp == NULL)
 			    break;
 			desc = comp->descending;
@@ -1069,7 +1134,7 @@ xsltDefaultSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts,
     }
 
     for (j = 0; j < nbsorts; j++) {
-	comp = sorts[j]->_private;
+	comp = sorts[j]->psvi;
 	if (tempstype[j] == 1) {
 	    /* The data-type needs to be recomputed each time */
 	    xmlFree((void *)(comp->stype));
@@ -1327,7 +1392,8 @@ xsltSaveResultTo(xmlOutputBufferPtr buf, xmlDocPtr result,
 		xmlNodeDumpOutput(buf, result, child, 0, (indent == 1),
 			          (const char *) encoding);
 		if ((child->type == XML_DTD_NODE) ||
-		    (child->type == XML_COMMENT_NODE))
+		    ((child->type == XML_COMMENT_NODE) &&
+		     (child->next != NULL)))
 		    xmlOutputBufferWriteString(buf, "\n");
 		child = child->next;
 	    }
@@ -1995,5 +2061,4 @@ xslDropCall(void)
     if (xsltDebuggerCurrentCallbacks.drop != NULL)
 	xsltDebuggerCurrentCallbacks.drop();
 }
-
 

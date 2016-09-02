@@ -141,6 +141,16 @@ EXTRA_DIST =	\
 	bug-139.xml \
 	bug-140.xml \
 	bug-141.xml \
+	bug-142.xml \
+	bug-143.xml \
+	bug-144.xml \
+	bug-145.xml \
+	bug-146.xml \
+	bug-147.xml \
+	bug-148.xml \
+	bug-149.xml \
+	bug-150.xml \
+	bug-151.xml \
 	character.xml \
 	array.xml \
 	items.xml

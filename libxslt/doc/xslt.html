@@ -128,6 +128,12 @@ cases I'm not the best person to answer a given question, ask the list
 instead. <strong>Do not send code, I won't debug it</strong> (but patches are
 really appreciated!).</p>
 
+<p>Please note that with the current amount of virus and SPAM, sending mail
+to the list without being subscribed won't work. There is *far too many
+bounces* (in the order of a thousand a day !) I cannot approve them manually
+anymore. If your mail to the list bounced waiting for administrator approval,
+it is LOST ! Repost it and fix the problem triggering the error.</p>
+
 <p>Check the following too <span style="color: #E50000">before
 posting</span>:</p>
 <ul>
@@ -207,8 +213,8 @@ database:</a>:</p>
 
 <h2><a name="Downloads">Downloads</a></h2>
 
-<p>The latest versions of libxslt can be found on <a
-href="ftp://xmlsoft.org/">xmlsoft.org</a> (<a
+<p>The latest versions of libxslt can be found on the <a
+href="ftp://xmlsoft.org/">xmlsoft.org</a> server and on mirrors (<a
 href="ftp://speakeasy.rpmfind.net/pub/libxml/">Seattle</a>, <a
 href="ftp://fr.rpmfind.net/pub/libxml/">France</a>) or on the <a
 href="ftp://ftp.gnome.org/pub/GNOME/MIRRORS.html">Gnome FTP server</a> as a
@@ -220,7 +226,7 @@ you need the <a href="http://rpmfind.net/linux/RPM/libxml2.html">libxml2</a>,
 <a href="http://rpmfind.net/linux/RPM/libxslt.html">libxslt</a> and <a
 href="http://rpmfind.net/linux/RPM/libxslt-devel.html">libxslt-devel</a>
 packages installed to compile applications using libxslt.) <a
-href="mailto:igor@zlatkovic.com">Igor  Zlatkovic</a> is now the maintainer of
+href="mailto:igor@zlatkovic.com">Igor Zlatkovic</a> is now the maintainer of
 the Windows port, <a
 href="http://www.zlatkovic.com/projects/libxml/index.html">he provides
 binaries</a>. <a href="mailto:Gary.Pennington@sun.com">Gary Pennington</a>
@@ -237,14 +243,13 @@ platform, get in touch with me to upload the package. I will keep them in the
 
 <p>Libxslt is also available from CVS:</p>
 <ul>
-  <li><p>The <a
-    href="http://cvs.gnome.org/bonsai/rview.cgi?cvsroot=/cvs/gnome&amp;dir=libxslt">Gnome
-    CVS base</a>. Check the <a
+  <li><p>The <a href="http://cvs.gnome.org/viewcvs/libxslt/">Gnome CVS
+    base</a>. Check the <a
     href="http://developer.gnome.org/tools/cvs.html">Gnome CVS Tools</a>
     page; the CVS module is <b>libxslt</b>.</p>
   </li>
-  <li><a href="ftp://xmlsoft.org/XSLT/cvs-snapshot.tar.gz">daily snapshots
-    from CVS</a> are also provided</li>
+  <li><a href="ftp://xmlsoft.org/XSLT/cvs-snapshot.tar.gz">snapshots from
+    CVS</a> updated every hour are also provided</li>
 </ul>
 
 <h2><a name="FAQ">FAQ</a></h2>
@@ -287,9 +292,66 @@ platform, get in touch with me to upload the package. I will keep them in the
 
 <h2><a name="News">News</a></h2>
 
-<h3>CVS only : check the <a
-href="http://cvs.gnome.org/lxr/source/libxslt/ChangeLog">Changelog</a> file
-for a really accurate description</h3>
+<p>The <a href="ChangeLog.html">change log</a> describes the recents commits
+to the <a href="http://cvs.gnome.org/viewcvs/libxslt/">CVS</a> code base.</p>
+
+<p>Those are the public releases made:</p>
+
+<h3>1.1.9: Aug 22 2004</h3>
+<ul>
+  <li>build fixes: missing tests (William Brack), Python dependancies, Python
+    on 64bits boxes, --with-crypto flag (Rob Richards), </li>
+  <li>fixes: RVT key handling (William), Python binding (William and Sitsofe
+    Wheeler), key and XPath troubles (William), template priority on imports
+    (William), str:tokenize with empty strings (William), #default namespace
+    alias behaviour (William), doc ordering missing for main document
+    (William), 64bit bug (Andreas Schwab)</li>
+  <li>improvements: EXSLT date:sum added (Joel Reed), hook for document
+    loading for David Hyatt, xsltproc --nodtdattr to avoid defaulting DTD
+    attributes, extend xsltproc --version with CVS stamp (William).</li>
+  <li>Documentation: web page problem reported by Oliver Stoeneberg</li>
+</ul>
+
+<h3>1.1.8: July 5 2004</h3>
+<ul>
+  <li>build fixes: Windows runtime options (Oliver Stoeneberg), Windows
+    binary package layout (Igor Zlatkovic), libgcrypt version test and link
+    (William)</li>
+  <li>documentation: fix libxslt namespace name in doc (William)</li>
+  <li>bug fixes: undefined namespace message (William Brack), search engine
+    (William), multiple namespace fixups (William), namespace fix for key
+    evaluation (William), Python memory debug bindings,</li>
+  <li>improvements: crypto extensions for exslt (Joel Reed, William)</li>
+</ul>
+
+<h3>1.1.7: May 17 2004</h3>
+<ul>
+  <li>build fix: warning about localtime_r on Solaris</li>
+  <li>bug fix: UTF8 string tokenize (William Brack), subtle memory
+    corruption, linefeed after comment at document level (William),
+    disable-output-escaping problem (William), pattern compilation in deep
+    imported stylesheets (William), namespace extension prefix bug,
+    libxslt.m4 bug (Edward Rudd), namespace lookup for attribute, namespaced
+    DOCTYPE name</li>
+</ul>
+
+<h3>1.1.6: Apr 18 2004</h3>
+<ul>
+  <li>2 bug fixes about keys fixed one by Mark Vakoc</li>
+</ul>
+
+<h3>1.1.5: Mar 23 2004</h3>
+<ul>
+  <li>performance: use dictionnary lookup for variables</li>
+  <li>remove use of _private from source documents</li>
+  <li>cleanup of "make tests" output</li>
+  <li>bugfixes: AVT in local variables, use localtime_r to avoid thread
+    troubles (William), dictionary handling bug (William), limited number of
+    stubstitutions in AVT (William), tokenize fix for UTF-8 (William),
+    superfluous namespace (William), xsltproc error code on
+    &lt;xsl:message&gt; halt, OpenVMS fix, dictionnary reference counting
+    change.</li>
+</ul>
 
 <h3>1.1.4: Feb 23 2004</h3>
 <ul>
@@ -1800,25 +1862,25 @@ two <a href="http://www.w3.org/TR/xslt">ways to extend an XSLT engine</a>:</p>
 i.e. an URI used as the name for the extension's namespace (there is no need
 to have a resource there for this to work).</p>
 
-<p>libxslt provides a few extensions itself, either in libxslt namespace
-"http://xmlsoft.org/XSLT/" or in other namespace for well known extensions
-provided by other XSLT processors like Saxon, Xalan or XT.</p>
+<p>libxslt provides a few extensions itself, either in the libxslt namespace
+"http://xmlsoft.org/XSLT/namespace" or in namespaces for other well known
+extensions provided by other XSLT processors like Saxon, Xalan or XT.</p>
 
 <h3><a name="Keep">Extension modules</a></h3>
 
 <p>Since extensions are bound to a namespace name, usually sets of extensions
 coming from a given source are using the same namespace name defining in
 practice a group of extensions providing elements, functions or both. From
-libxslt point of view those are considered as an "extension module", and most
-of the APIs work at a module point of view.</p>
+the libxslt point of view those are considered as an "extension module", and
+most of the APIs work at a module point of view.</p>
 
 <p>Registration of new functions or elements are bound to the activation of
-the module, this is currently done by declaring the namespace as an extension
+the module. This is currently done by declaring the namespace as an extension
 by using the attribute  <code>extension-element-prefixes</code> on the
 <code><a href="http://www.w3.org/TR/xslt">xsl:stylesheet</a></code>
 element.</p>
 
-<p>And extension module is defined by 3 objects:</p>
+<p>An extension module is defined by 3 objects:</p>
 <ul>
   <li>the namespace name associated</li>
   <li>an initialization function</li>
@@ -1828,12 +1890,12 @@ element.</p>
 <h3><a name="Registerin">Registering a module</a></h3>
 
 <p>Currently a libxslt module has to be compiled within the application using
-libxslt, there is no code to load dynamically shared libraries associated to
-namespace (this may be added but is likely to become a portability
+libxslt. There is no code to load dynamically shared libraries associated to
+a namespace (this may be added but is likely to become a portability
 nightmare).</p>
 
-<p>So the current way to register a module is to link the code implementing
-it with the application and to call a registration function:</p>
+<p>The current way to register a module is to link the code implementing it
+with the application and to call a registration function:</p>
 <pre>int xsltRegisterExtModule(const xmlChar *URI,
                           xsltExtInitFunction initFunc,
                           xsltExtShutdownFunction shutdownFunc);</pre>
@@ -1868,18 +1930,18 @@ typedef void *(*xsltExtInitFunction)(xsltTransformContextPtr ctxt,
 
 <p>There are 3 things to notice:</p>
 <ul>
-  <li>the function gets passed the namespace name URI as an argument, this
-    allow a single function to provide the initialization for multiple
-    logical modules</li>
-  <li>it also gets passed a transformation context, the initialization is
+  <li>The function gets passed the namespace name URI as an argument. This
+    allows a single function to provide the initialization for multiple
+    logical modules.</li>
+  <li>It also gets passed a transformation context. The initialization is
     done at run time before any processing occurs on the stylesheet but it
-    will be invoked separately each time for each transformation</li>
-  <li>it returns a pointer, this can be used to store module specific
-    informations which can be retrieved later when a function or an element
-    from the extension are used, an obvious example is a connection to a
-    database which should be kept and reused along the transformation. NULL
-    is a perfectly valid return, there is no way to indicate a failure at
-    this level</li>
+    will be invoked separately each time for each transformation.</li>
+  <li>It returns a pointer.  This can be used to store module specific
+    information which can be retrieved later when a function or an element
+    from the extension is used.  An obvious example is a connection to a
+    database which should be kept and reused along with the transformation.
+    NULL is a perfectly valid return; there is no way to indicate a failure
+    at this level</li>
 </ul>
 
 <p>What this function is expected to do is:</p>
@@ -1923,7 +1985,7 @@ typedef void (*xmlXPathEvalFunc)(xmlXPathParserContextPtr ctxt,
 href="internals.html#XPath1">XPath context</a>. However it is possible to
 find one from the other:</p>
 <ul>
-  <li>The function xsltXPathGetTransformContext provide this lookup facility:
+  <li>The function xsltXPathGetTransformContext provides this lookup facility:
     <pre>xsltTransformContextPtr
          xsltXPathGetTransformContext
                           (xmlXPathParserContextPtr ctxt);</pre>
@@ -1934,8 +1996,8 @@ find one from the other:</p>
 </ul>
 
 <p>The first thing an extension function may want to do is to check the
-arguments passed on the stack, the <code>nargs</code> will precise how many
-of them were provided on the XPath expression. The macros valuePop will
+arguments passed on the stack, the <code>nargs</code> parameter will tell how
+many of them were provided on the XPath expression. The macro valuePop will
 extract them from the XPath stack:</p>
 <pre>#include &lt;libxml/xpath.h&gt;
 #include &lt;libxml/xpathInternals.h&gt;
@@ -1945,7 +2007,7 @@ xmlXPathObjectPtr obj = valuePop(ctxt); </pre>
 <p>Note that <code>ctxt</code> is the XPath context not the XSLT one. It is
 then possible to examine the content of the value. Check <a
 href="internals.html#Descriptio">the description of XPath objects</a> if
-necessary. The following is a common sequcnce checking whether the argument
+necessary. The following is a common sequence checking whether the argument
 passed is a string and converting it using the built-in XPath
 <code>string()</code> function if this is not the case:</p>
 <pre>if (obj-&gt;type != XPATH_STRING) {
@@ -1964,8 +2026,8 @@ can be done using the xsltGetExtData:</p>
 <pre>void * xsltGetExtData(xsltTransformContextPtr ctxt,
                       const xmlChar *URI);</pre>
 
-<p>again the URI to be provided is the one used which was used when
-registering the module.</p>
+<p>Again the URI to be provided is the one which was used when registering
+the module.</p>
 
 <p>Once the function finishes, don't forget to:</p>
 <ul>
@@ -1977,7 +2039,7 @@ registering the module.</p>
 
 <h3><a name="Examples">Examples for extension functions</a></h3>
 
-<p>The module libxslt/functions.c containsthe sources of the XSLT built-in
+<p>The module libxslt/functions.c contains the sources of the XSLT built-in
 functions, including document(), key(), generate-id(), etc. as well as a full
 example module at the end. Here is the test function implementation for the
 libxslt:test function:</p>
@@ -2024,9 +2086,9 @@ xsltExtFunctionTest(xmlXPathParserContextPtr ctxt, int nargs)
 except that the signature of an extension element implementation is
 different.</p>
 
-<p>The registration is bound to a single transformation instance referred by
-ctxt, name is the UTF8 encoded name for the NCName of the element, and URI is
-the namespace name for the extension (no checking is done, a module could
+<p>The registration is bound to a single transformation instance referred to
+by ctxt, name is the UTF8 encoded name for the NCName of the element, and URI
+is the namespace name for the extension (no checking is done, a module could
 register elements for a different namespace, but it is not recommended).</p>
 
 <h3><a name="Implementi1">Implementing an extension element</a></h3>
@@ -2055,28 +2117,28 @@ href="internals.html#libxml">representation of  XML nodes</a>. They are
 respectively <code>node</code> from the the input document being transformed
 by the stylesheet and <code>inst</code> the extension element in the
 stylesheet. The last argument is <code>comp</code> a pointer to a precompiled
-representation of <code>inst</code> but usually for extension function this
-value is <code>NULL</code> by default (it could be added and associated to
-the instruction in <code>inst-&gt;_private</code>).</p>
+representation of <code>inst</code> but usually for an extension function
+this value is <code>NULL</code> by default (it could be added and associated
+to the instruction in <code>inst-&gt;_private</code>).</p>
 
 <p>The same functions are available from a function implementing an extension
 element as in an extension function, including
 <code>xsltGetExtData()</code>.</p>
 
-<p>The goal of extension element being usually to enrich the generated
+<p>The goal of an extension element being usually to enrich the generated
 output, it is expected that they will grow the currently generated output
-tree, this can be done by grabbing ctxt-&gt;insert which is the current
+tree. This can be done by grabbing ctxt-&gt;insert which is the current
 libxml node being generated (Note this can also be the intermediate value
 tree being built for example to initialize a variable, the processing should
 be similar). The functions for libxml tree manipulation from <a
 href="http://xmlsoft.org/html/libxml-tree.html">&lt;libxml/tree.h&gt;</a> can
 be employed to extend or modify the tree, but it is required to preserve the
-insertion node and its ancestors since there is existing pointers to those
+insertion node and its ancestors since there are existing pointers to those
 elements still in use in the XSLT template execution stack.</p>
 
 <h3><a name="Example">Example for extension elements</a></h3>
 
-<p>The module libxslt/transform.c containsthe sources of the XSLT built-in
+<p>The module libxslt/transform.c contains the sources of the XSLT built-in
 elements, including xsl:element, xsl:attribute, xsl:if, etc. There is a small
 but full example in functions.c providing the implementation for the
 libxslt:test element, it will output a comment in the result tree:</p>
@@ -2125,7 +2187,7 @@ xsltExtElementTest(xsltTransformContextPtr ctxt, xmlNodePtr node,
 <h3><a name="shutdown">The shutdown of a module</a></h3>
 
 <p>When the XSLT processor ends a transformation, the shutdown function (if
-it exists) of all the modules initialized are called.The
+it exists) for each of the modules initialized is called.  The
 xsltExtShutdownFunction type defines the interface for a shutdown
 function:</p>
 <pre>/**
@@ -2140,17 +2202,17 @@ typedef void (*xsltExtShutdownFunction) (xsltTransformContextPtr ctxt,
                                          const xmlChar *URI,
                                          void *data);</pre>
 
-<p>this is really similar to a module initialization function except a third
+<p>This is really similar to a module initialization function except a third
 argument is passed, it's the value that was returned by the initialization
-function. This allow to deallocate resources from the module for example
-close the connection to the database to keep the same example.</p>
+function. This allows the routine to deallocate resources from the module for
+example close the connection to the database to keep the same example.</p>
 
 <h3><a name="Future">Future work</a></h3>
 
-<p>Well some of the pieces missing:</p>
+<p>Well, some of the pieces missing:</p>
 <ul>
-  <li>a way to load shared libraries to instanciate new modules</li>
-  <li>a better detection of extension function usage and their registration
+  <li>a way to load shared libraries to instantiate new modules</li>
+  <li>a better detection of extension functions usage and their registration
     without having to use the extension prefix which ought to be reserved to
     element extensions.</li>
   <li>more examples</li>

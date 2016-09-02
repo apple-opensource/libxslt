@@ -5,7 +5,7 @@
                 version='1.0'>
 
 <!-- ********************************************************************
-     $Id: fop.xsl,v 1.1.1.1 2004/05/03 18:38:16 rbraun Exp $
+     $Id: fop.xsl,v 1.1 2001/06/23 17:06:33 veillard Exp $
      ********************************************************************
      (c) Stephane Bline Peregrine Systems 2001
      Driver file to allow pdf bookmarking (based on fop implementation).

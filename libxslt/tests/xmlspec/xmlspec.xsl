@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<!-- Version: $Id: xmlspec.xsl,v 1.1.1.1 2004/05/03 18:38:18 rbraun Exp $ -->
+<!-- Version: $Id: xmlspec.xsl,v 1.3 2001/02/14 14:45:10 veillard Exp $ -->
 
 <!-- Stylesheet for XMLspec -->
 <!-- Author: Norman Walsh (Norman.Walsh@East.Sun.COM) -->

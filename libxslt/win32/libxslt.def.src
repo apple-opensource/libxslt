@@ -1,6 +1,7 @@
 LIBRARY libxslt
 EXPORTS
 xslDebugStatus DATA
+xsltDocDefaultLoader DATA
 xsltEngineVersion DATA
 xsltExtMarker DATA
 xsltGenericDebug DATA
@@ -112,8 +113,10 @@ xsltGetExtInfo
 xsltGetKey
 xsltGetNamespace
 xsltGetNsProp
+xsltGetPlainNamespace
 xsltGetProfileInformation
 xsltGetQNameURI
+xsltGetQNameURI2
 xsltGetSecurityPrefs
 xsltGetSpecialNamespace
 xsltGetTemplate
@@ -196,6 +199,7 @@ xsltSetDebuggerStatus
 xsltSetDefaultSecurityPrefs
 xsltSetGenericDebugFunc
 xsltSetGenericErrorFunc
+xsltSetLoaderFunc
 xsltSetSecurityPrefs
 xsltSetSortFunc
 xsltSetTransformErrorFunc

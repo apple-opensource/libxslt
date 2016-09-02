@@ -433,6 +433,12 @@ xsltNewTransformContext(xsltStylesheetPtr style, xmlDocPtr doc) {
      * Initialize the registered external modules
      */
     xsltInitCtxtExts(cur);
+    /*
+     * Setup document element ordering for later efficiencies
+     * (bug 133289)
+     */
+    if (xslDebugStatus == XSLT_DEBUG_NONE)
+        xmlXPathOrderDocElems(doc);
     docu = xsltNewDocument(cur, doc);
     if (docu == NULL) {
 	xsltTransformError(cur, NULL, (xmlNodePtr)doc,
@@ -742,7 +748,7 @@ xsltCopyProp(xsltTransformContextPtr ctxt, xmlNodePtr target,
 	return(NULL);
 
     if (attr->ns != NULL) {
-	ns = xsltGetNamespace(ctxt, attr->parent, attr->ns, target);
+	ns = xsltGetPlainNamespace(ctxt, attr->parent, attr->ns, target);
     } else {
 	ns = NULL;
     }
@@ -960,7 +966,10 @@ xsltCopyTree(xsltTransformContextPtr ctxt, xmlNodePtr node,
         case XML_DOCB_DOCUMENT_NODE:
 #endif
 	    break;
-        case XML_TEXT_NODE:
+        case XML_TEXT_NODE: {
+	    int noenc = (node->name == xmlStringTextNoenc);
+	    return(xsltCopyTextString(ctxt, insert, node->content, noenc));
+	    }
         case XML_CDATA_SECTION_NODE:
 	    return(xsltCopyTextString(ctxt, insert, node->content, 0));
         case XML_ATTRIBUTE_NODE:
@@ -1007,15 +1016,29 @@ xsltCopyTree(xsltTransformContextPtr ctxt, xmlNodePtr node,
 	 */
 	if ((node->type == XML_ELEMENT_NODE) ||
 	    (node->type == XML_ATTRIBUTE_NODE)) {
+	    xmlNsPtr *nsList, *cur, ns;
 	    if (node->ns != NULL)
 		copy->ns = xsltGetNamespace(ctxt, node, node->ns, copy);
-	    else if ((insert != NULL) && (insert->type == XML_ELEMENT_NODE) &&
-		     (insert->ns != NULL)) {
+	    else if ((insert->type == XML_ELEMENT_NODE) && (insert->ns != NULL)) {
 		xmlNsPtr defaultNs;
 
 		defaultNs = xmlSearchNs(insert->doc, insert, NULL);
 		if (defaultNs != NULL)
 		    xmlNewNs(copy, BAD_CAST "", NULL);
+	    }
+	    /*
+	     * must also add in any new namespaces in scope for the node
+	     */
+	    nsList = xmlGetNsList(node->doc, node);
+	    if (nsList != NULL) {
+		cur = nsList;
+		while (*cur != NULL) {
+		    ns = xmlSearchNsByHref(insert->doc, insert, (*cur)->href);
+		    if (ns == NULL)
+			xmlNewNs(copy, (*cur)->href, (*cur)->prefix);
+		    cur++;
+		}
+		xmlFree(nsList);
 	    }
 	}
 	if (node->nsDef != NULL) {
@@ -1532,7 +1555,7 @@ xsltApplyOneTemplate(xsltTransformContextPtr ctxt, xmlNodePtr node,
             /*
              * This is an XSLT node
              */
-            xsltStylePreCompPtr info = (xsltStylePreCompPtr) cur->_private;
+            xsltStylePreCompPtr info = (xsltStylePreCompPtr) cur->psvi;
 
             if (info == NULL) {
                 if (IS_XSLT_NAME(cur, "message")) {
@@ -1607,17 +1630,17 @@ xsltApplyOneTemplate(xsltTransformContextPtr ctxt, xmlNodePtr node,
 #endif
             xsltCopyText(ctxt, insert, cur);
         } else if ((cur->type == XML_ELEMENT_NODE) &&
-                   (cur->ns != NULL) && (cur->_private != NULL)) {
+                   (cur->ns != NULL) && (cur->psvi != NULL)) {
             xsltTransformFunction function;
 
             /*
              * Flagged as an extension element
              */
-            if (cur->_private == xsltExtMarker)
+            if (cur->psvi == xsltExtMarker)
                 function = (xsltTransformFunction)
                     xsltExtElementLookup(ctxt, cur->name, cur->ns->href);
             else
-                function = ((xsltElemPreCompPtr) cur->_private)->func;
+                function = ((xsltElemPreCompPtr) cur->psvi)->func;
 
             if (function == NULL) {
                 xmlNodePtr child;
@@ -1655,7 +1678,7 @@ xsltApplyOneTemplate(xsltTransformContextPtr ctxt, xmlNodePtr node,
 #endif
 
                 ctxt->insert = insert;
-                function(ctxt, node, cur, cur->_private);
+                function(ctxt, node, cur, cur->psvi);
                 ctxt->insert = oldInsert;
             }
             goto skip_children;
@@ -1696,6 +1719,15 @@ xsltApplyOneTemplate(xsltTransformContextPtr ctxt, xmlNodePtr node,
 			break;
 		      
 		      style = xsltNextImport(style);
+		    }
+
+		    if (URI == UNDEFINED_DEFAULT_NS) {
+		      xmlNsPtr dflt;
+		      dflt = xmlSearchNs(cur->doc, cur, NULL);
+		      if (dflt == NULL)
+		        continue;
+		      else
+		        URI = dflt->href;
 		    }
 
 		    if (URI == NULL) {
@@ -1792,12 +1824,16 @@ xsltApplyOneTemplate(xsltTransformContextPtr ctxt, xmlNodePtr node,
 	    xsltStackElemPtr elem;
 	    xmlDocPtr tmp = ctxt->tmpRVT, next;
             while (tmp != NULL) {
-	        elem = (xsltStackElemPtr)tmp->_private;
+	        elem = (xsltStackElemPtr)tmp->psvi;
 		if (elem != NULL) {
 		    elem->computed = 0;
 		    xmlXPathFreeObject(elem->value);
 		}
 	        next = (xmlDocPtr) tmp->next;
+		if (tmp->_private != NULL) {
+		    xsltFreeDocumentKeys(tmp->_private);
+		    xmlFree(tmp->_private);
+		}
 		xmlFreeDoc(tmp);
 		tmp = next;
 	    }
@@ -2210,6 +2246,13 @@ xsltDocumentElem(xsltTransformContextPtr ctxt, xmlNodePtr node,
      */
     root = xmlDocGetRootElement(res);
     if (root != NULL) {
+        const xmlChar *doctype = NULL;
+
+        if ((root->ns != NULL) && (root->ns->prefix != NULL))
+	    doctype = xmlDictQLookup(ctxt->dict, root->ns->prefix, root->name);
+	if (doctype == NULL)
+	    doctype = root->name;
+
         /*
          * Apply the default selection of the method
          */
@@ -2230,7 +2273,7 @@ xsltDocumentElem(xsltTransformContextPtr ctxt, xmlNodePtr node,
                 ctxt->type = XSLT_OUTPUT_HTML;
                 res->type = XML_HTML_DOCUMENT_NODE;
                 if (((doctypePublic != NULL) || (doctypeSystem != NULL))) {
-                    res->intSubset = xmlCreateIntSubset(res, root->name,
+                    res->intSubset = xmlCreateIntSubset(res, doctype,
                                                         doctypePublic,
                                                         doctypeSystem);
 #ifdef XSLT_GENERATE_HTML_DOCTYPE
@@ -2239,7 +2282,7 @@ xsltDocumentElem(xsltTransformContextPtr ctxt, xmlNodePtr node,
                                    &doctypeSystem);
                     if (((doctypePublic != NULL) || (doctypeSystem != NULL)))
                         res->intSubset =
-                            xmlCreateIntSubset(res, root->name,
+                            xmlCreateIntSubset(res, doctype,
                                                doctypePublic,
                                                doctypeSystem);
 #endif
@@ -2251,7 +2294,7 @@ xsltDocumentElem(xsltTransformContextPtr ctxt, xmlNodePtr node,
             XSLT_GET_IMPORT_PTR(doctypePublic, style, doctypePublic)
                 XSLT_GET_IMPORT_PTR(doctypeSystem, style, doctypeSystem)
                 if (((doctypePublic != NULL) || (doctypeSystem != NULL)))
-                res->intSubset = xmlCreateIntSubset(res, root->name,
+                res->intSubset = xmlCreateIntSubset(res, doctype,
                                                     doctypePublic,
                                                     doctypeSystem);
         }
@@ -3006,8 +3049,15 @@ xsltCallTemplate(xsltTransformContextPtr ctxt, xmlNodePtr node,
     if (comp->templ == NULL) {
 	comp->templ = xsltFindTemplate(ctxt, comp->name, comp->ns);
 	if (comp->templ == NULL) {
-	    xsltTransformError(ctxt, NULL, inst,
-		 "xsl:call-template : template %s not found\n", comp->name);
+	    if (comp->ns != NULL) {
+	        xsltTransformError(ctxt, NULL, inst,
+			"xsl:call-template : template %s:%s not found\n",
+			comp->ns, comp->name);
+	    } else {
+	        xsltTransformError(ctxt, NULL, inst,
+			"xsl:call-template : template %s not found\n",
+			comp->name);
+	    }
 	    return;
 	}
     }
@@ -3077,7 +3127,7 @@ xsltApplyTemplates(xsltTransformContextPtr ctxt, xmlNodePtr node,
     int nbsorts = 0;
     xmlNodePtr sorts[XSLT_MAX_SORT];
     xmlDocPtr oldXDocPtr;
-    xsltDocumentPtr oldCDocPtr, tmpDocPtr, newDocPtr = NULL;
+    xsltDocumentPtr oldCDocPtr;
     int oldNsNr;
     xmlNsPtr *oldNamespaces;
 
@@ -3142,6 +3192,9 @@ xsltApplyTemplates(xsltTransformContextPtr ctxt, xmlNodePtr node,
 		 In order to take care of potential keys we need to
 		 do some extra work in the case of an RVT converted
 		 into a nodeset (e.g. exslt:node-set())
+		 We create a "pseudo-doc" (if not already created) and
+		 store it's pointer into _private.  This doc, together
+		 with the keyset, will be freed when the RVT is freed.
 	        */
 		if ((list != NULL) && (ctxt->document->keys != NULL)) {
 		    if ((list->nodeNr != 0) &&
@@ -3149,15 +3202,16 @@ xsltApplyTemplates(xsltTransformContextPtr ctxt, xmlNodePtr node,
 		        (xmlStrEqual((xmlChar *)list->nodeTab[0]->doc->name,
 			   (const xmlChar *) " fake node libxslt")) &&
 			(list->nodeTab[0]->doc->_private == NULL)) {
-		        newDocPtr = xsltNewDocument(ctxt, 
-			       list->nodeTab[0]->doc);
-		        if (newDocPtr == NULL) {
+			    list->nodeTab[0]->doc->_private = xsltNewDocument(
+			    	ctxt, list->nodeTab[0]->doc);
+			if (list->nodeTab[0]->doc->_private == NULL) {
 			    xsltTransformError(ctxt, NULL, inst,
 		    "xsltApplyTemplates : failed to allocate subdoc\n");
 		        }
-			list->nodeTab[0]->_private = (xmlNodePtr)newDocPtr;
-			ctxt->document = newDocPtr;
+
+			ctxt->document = list->nodeTab[0]->doc->_private;
 		    }
+
 		}
 	     } else {
 		list = NULL;
@@ -3332,21 +3386,8 @@ xsltApplyTemplates(xsltTransformContextPtr ctxt, xmlNodePtr node,
 error:
     if (params != NULL)
 	xsltFreeStackElemList(params);	/* free the parameter list */
-    if (list != NULL) {
-        /*
-	  If we created a "pseudo-document" we must free it now
-	*/
-	if (newDocPtr != NULL) {
-	    tmpDocPtr = (xsltDocumentPtr)&ctxt->docList;
-	    while (tmpDocPtr->next != newDocPtr)
-	        tmpDocPtr = tmpDocPtr->next;
-	    tmpDocPtr->next = newDocPtr->next;
-	    newDocPtr->doc->parent = NULL;
-	    xsltFreeDocumentKeys(newDocPtr);
-	    xmlFree(newDocPtr);
-	}
+    if (list != NULL)
 	xmlXPathFreeNodeSet(list);
-    }
     /*
      * res must be deallocated after list
      */
@@ -3407,7 +3448,7 @@ xsltChoose(xsltTransformContextPtr ctxt, xmlNodePtr node,
     }
     while ((IS_XSLT_ELEM(replacement) && (IS_XSLT_NAME(replacement, "when")))
 	    || xmlIsBlankNode(replacement)) {
-	xsltStylePreCompPtr wcomp = replacement->_private;
+	xsltStylePreCompPtr wcomp = replacement->psvi;
 
 	if (xmlIsBlankNode(replacement)) {
 	    replacement = replacement->next;
@@ -4085,6 +4126,13 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
      */
     root = xmlDocGetRootElement(res);
     if (root != NULL) {
+        const xmlChar *doctype = NULL;
+
+        if ((root->ns != NULL) && (root->ns->prefix != NULL))
+	    doctype = xmlDictQLookup(ctxt->dict, root->ns->prefix, root->name);
+	if (doctype == NULL)
+	    doctype = root->name;
+
         /*
          * Apply the default selection of the method
          */
@@ -4105,7 +4153,7 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
                 ctxt->type = XSLT_OUTPUT_HTML;
                 res->type = XML_HTML_DOCUMENT_NODE;
                 if (((doctypePublic != NULL) || (doctypeSystem != NULL))) {
-                    res->intSubset = xmlCreateIntSubset(res, root->name,
+                    res->intSubset = xmlCreateIntSubset(res, doctype,
                                                         doctypePublic,
                                                         doctypeSystem);
 #ifdef XSLT_GENERATE_HTML_DOCTYPE
@@ -4114,7 +4162,7 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
                                    &doctypeSystem);
                     if (((doctypePublic != NULL) || (doctypeSystem != NULL)))
                         res->intSubset =
-                            xmlCreateIntSubset(res, root->name,
+                            xmlCreateIntSubset(res, doctype,
                                                doctypePublic,
                                                doctypeSystem);
 #endif
@@ -4130,7 +4178,7 @@ xsltApplyStylesheetInternal(xsltStylesheetPtr style, xmlDocPtr doc,
 		   possible comment nodes */
 		node = res->children;
 		res->children = NULL;
-                res->intSubset = xmlCreateIntSubset(res, root->name,
+                res->intSubset = xmlCreateIntSubset(res, doctype,
                                                     doctypePublic,
                                                     doctypeSystem);
 		res->children->next = node;

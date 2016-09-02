@@ -3,7 +3,7 @@
                 version='1.0'>
 
 <!-- ********************************************************************
-     $Id: pi.xsl,v 1.1.1.1 2004/05/03 18:38:16 rbraun Exp $
+     $Id: pi.xsl,v 1.2 2001/06/23 17:06:40 veillard Exp $
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.
